@@ -399,7 +399,7 @@ function QueueRow(props: QueueRowProps) {
         isOpen={isRemoveQueueItemModalOpen}
         sourceTitle={title}
         canChangeCategory={!!downloadClientHasPostImportCategory}
-        canIgnore={!!series}
+        canIgnore={true}
         isPending={isPending}
         onRemovePress={handleRemoveQueueItemModalConfirmed}
         onModalClose={handleRemoveQueueItemModalClose}
