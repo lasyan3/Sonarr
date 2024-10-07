@@ -225,7 +225,7 @@ namespace NzbDrone.Core.Parser
                     RegexOptions.IgnoreCase | RegexOptions.Compiled),
 
                 // Multi-season pack
-                new Regex(@"^(?<title>.+?)(Complete Series)?[-_. ]+(?:S|(?:Season|Saison|Series|Stagione)[_. ])(?<season>(?<!\d+)(?:\d{1,2})(?!\d+))(?:[-_. ]{1}|[-_. ]{3})(?:S|(?:Season|Saison|Series|Stagione)[_. ])?(?<season>(?<!\d+)(?:\d{1,2})(?!\d+))",
+                new Regex(@"^(?<title>.+?)(Complete Series)?[-_. ]+(?:S|(?:Season|Saison|Series|Stagione)[_. ])(?<season>(?<!\d+)(?:\d{1,2})(?!\d+))(?:[-_. ]{1}|[-_. ]{3})(?:S|(?:Season|Saison|Series|Stagione)[_. ])(?<season>(?<!\d+)(?:\d{1,2})(?!\d+))",
                     RegexOptions.IgnoreCase | RegexOptions.Compiled),
 
                 // Partial season pack
@@ -304,8 +304,8 @@ namespace NzbDrone.Core.Parser
                 new Regex(@"^(?:(?<title>.+?)(?:_|-|\s|\.)+)(?:S?(?<season>(?<!\d+)\d{1,2}(?!\d+)))(?:(?:[-_. ]{1,3}ep){1,2}(?<episode>(?<!\d+)\d{5}(?!\d+)))+",
                           RegexOptions.IgnoreCase | RegexOptions.Compiled),
 
-                // Separated season and episode numbers S01 - E01
-                new Regex(@"^(?<title>.+?)(?:_|-|\s|\.)+S(?<season>\d{2}(?!\d+))(\W-\W)E(?<episode>(?<!\d+)\d{2}(?!\d+))(?!\\)",
+                // Separated season and episode numbers "S01 - E01" or "S01 - 01"
+                new Regex(@"^(?<title>.+?)(?:_|-|\s|\.)+S(?<season>\d{2}(?!\d+))(?:[-_. E]{3,})(?<episode>(?<!\d+)\d{2}(?!\d+))(?!\\)",
                           RegexOptions.IgnoreCase | RegexOptions.Compiled),
 
                 // Season and episode numbers in square brackets (single and multi-episode)
