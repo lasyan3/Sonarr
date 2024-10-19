@@ -71,8 +71,12 @@ Build()
     else
         platform=Posix
     fi
+	
+	find ./_temp/obj -name project.assets.json -exec rm {} \;
 
+	echo "Clean Debug"
     dotnet clean $slnFile -c Debug
+	echo "Clean Release"
     dotnet clean $slnFile -c Release
 
     if [[ -z "$RID" || -z "$FRAMEWORK" ]];
