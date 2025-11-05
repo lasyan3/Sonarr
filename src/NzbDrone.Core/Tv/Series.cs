@@ -62,7 +62,7 @@ namespace NzbDrone.Core.Tv
         public HashSet<int> Tags { get; set; }
         public AddSeriesOptions AddOptions { get; set; }
 
-        public bool IgnoreAlternateTitles { get; set; }
+        public bool IgnoreAlternateTitles { get; set; } = true;
 
         public override string ToString()
         {
