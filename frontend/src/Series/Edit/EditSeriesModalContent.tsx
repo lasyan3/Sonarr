@@ -48,6 +48,7 @@ function EditSeriesModalContent({
     monitored,
     monitorNewItems,
     seasonFolder,
+	ignoreAlternateTitles,
     qualityProfileId,
     seriesType,
     path,
@@ -73,6 +74,7 @@ function EditSeriesModalContent({
         monitored,
         monitorNewItems,
         seasonFolder,
+		ignoreAlternateTitles,
         qualityProfileId,
         seriesType,
         path,
@@ -85,6 +87,7 @@ function EditSeriesModalContent({
     monitored,
     monitorNewItems,
     seasonFolder,
+	ignoreAlternateTitles,
     qualityProfileId,
     seriesType,
     path,
@@ -197,6 +200,18 @@ function EditSeriesModalContent({
               name="seasonFolder"
               helpText={translate('UseSeasonFolderHelpText')}
               {...settings.seasonFolder}
+              onChange={handleInputChange}
+            />
+          </FormGroup>
+
+          <FormGroup size={sizes.MEDIUM}>
+            <FormLabel>{translate('IgnoreAlternateTitles')}</FormLabel>
+
+            <FormInputGroup
+              type={inputTypes.CHECK}
+              name="ignoreAlternateTitles"
+              helpText={translate('IgnoreAlternateTitlesHelpText')}
+              {...settings.ignoreAlternateTitles}
               onChange={handleInputChange}
             />
           </FormGroup>

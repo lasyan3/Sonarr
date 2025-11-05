@@ -43,6 +43,7 @@ namespace Sonarr.Api.V3.Series
 
         // Editing Only
         public bool SeasonFolder { get; set; }
+        public bool IgnoreAlternateTitles { get; set; }
         public bool Monitored { get; set; }
         public NewItemMonitorTypes MonitorNewItems { get; set; }
 
@@ -116,6 +117,7 @@ namespace Sonarr.Api.V3.Series
                        QualityProfileId = model.QualityProfileId,
 
                        SeasonFolder = model.SeasonFolder,
+                       IgnoreAlternateTitles = model.IgnoreAlternateTitles,
                        Monitored = model.Monitored,
                        MonitorNewItems = model.MonitorNewItems,
 
@@ -181,6 +183,7 @@ namespace Sonarr.Api.V3.Series
                        QualityProfileId = resource.QualityProfileId,
 
                        SeasonFolder = resource.SeasonFolder,
+                       IgnoreAlternateTitles = resource.IgnoreAlternateTitles,
                        Monitored = resource.Monitored,
                        MonitorNewItems = resource.MonitorNewItems,
 
