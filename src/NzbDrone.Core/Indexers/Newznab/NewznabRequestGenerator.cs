@@ -430,6 +430,11 @@ namespace NzbDrone.Core.Indexers.Newznab
                         "search",
                         $"&q={NewsnabifyTitle(queryTitle)}+{searchCriteria.AbsoluteEpisodeNumber:00}"));
 
+                    pageableRequests.Add(GetPagedRequests(MaxPages,
+                       Settings.AnimeCategories,
+                       "search",
+                       $"&q={NewsnabifyTitle(queryTitle)}+E{searchCriteria.AbsoluteEpisodeNumber:00}"));
+
                     if (includeAnimeStandardFormatSearch && SupportsEpisodeSearch)
                     {
                         pageableRequests.Add(GetPagedRequests(MaxPages,
