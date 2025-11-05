@@ -146,8 +146,22 @@ namespace NzbDrone.Core.IndexerSearch
                     var searchSpec = Get<SeasonSearchCriteria>(series, mapping, monitoredOnly, userInvokedSearch, interactiveSearch);
                     searchSpec.SeasonNumber = mapping.SeasonNumber;
 
+                    var episodesToSearch = episodes
+                        .Where(ep => interactiveSearch || !monitoredOnly || ep.Monitored)
+                        .Where(ep => ep.AirDateUtc.HasValue && ep.AirDateUtc.Value.Before(DateTime.UtcNow))
+                        .ToList();
+
                     var decisions = await Dispatch(indexer => indexer.Fetch(searchSpec), searchSpec);
                     downloadDecisions.AddRange(decisions);
+
+                    // Si la saison est en cours, on recherche les épisodes sortis individuellement
+                    if (episodesToSearch.Count < mapping.Episodes.Count)
+                    {
+                        foreach (var episode in episodesToSearch)
+                        {
+                            downloadDecisions.AddRange(await SearchSingle(series, episode, monitoredOnly, userInvokedSearch, interactiveSearch));
+                        }
+                    }
                 }
             }
 
