@@ -452,7 +452,7 @@ namespace NzbDrone.Core.Indexers.Newznab
                 AddTvIdPageableRequests(pageableRequests,
                     Settings.AnimeCategories,
                     searchCriteria,
-                    $"&season={NewznabifySeasonNumber(searchCriteria.SeasonNumber)}");
+                    searchCriteria.IgnoreSeason ? "" : $"&season={NewznabifySeasonNumber(searchCriteria.SeasonNumber)}");
 
                 var queryTitles = TextSearchEngine == "raw" ? searchCriteria.AllSceneTitles : searchCriteria.CleanSceneTitles;
 
@@ -461,7 +461,7 @@ namespace NzbDrone.Core.Indexers.Newznab
                     pageableRequests.Add(GetPagedRequests(MaxPages,
                         Settings.AnimeCategories,
                         "tvsearch",
-                        $"&q={NewsnabifyTitle(queryTitle)}&season={NewznabifySeasonNumber(searchCriteria.SeasonNumber)}"));
+                        $"&q={NewsnabifyTitle(queryTitle)}" + (searchCriteria.IgnoreSeason ? "" : $"&season={NewznabifySeasonNumber(searchCriteria.SeasonNumber)}")));
                 }
             }
 

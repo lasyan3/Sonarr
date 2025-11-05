@@ -407,6 +407,13 @@ namespace NzbDrone.Core.IndexerSearch
                 .Select(epList => epList.First())
                 .ToList();
 
+            // if serie finished and just 1 season (ex Gungrave), try search without season number
+            if (seasonsToSearch.Count == 1 && series.Seasons.Count == 1
+                && series.Status == SeriesStatusType.Ended)
+            {
+                searchSpec.IgnoreSeason = true;
+            }
+
             foreach (var season in seasonsToSearch)
             {
                 searchSpec.SeasonNumber = season.SeasonNumber;
