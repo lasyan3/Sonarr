@@ -415,9 +415,15 @@ namespace NzbDrone.Core.IndexerSearch
                 downloadDecisions.AddRange(decisions);
             }
 
-            foreach (var episode in episodesToSearch)
+            // Only if this is the last season and serie not finished
+            if (seasonsToSearch.Count == 1
+                && seasonsToSearch[0].SeasonNumber == series.Seasons[^1].SeasonNumber
+                 && series.Status != SeriesStatusType.Ended)
             {
-                downloadDecisions.AddRange(await SearchAnime(series, episode, monitoredOnly, userInvokedSearch, interactiveSearch, true));
+                foreach (var episode in episodesToSearch)
+                {
+                    downloadDecisions.AddRange(await SearchAnime(series, episode, monitoredOnly, userInvokedSearch, interactiveSearch, true));
+                }
             }
 
             return DeDupeDecisions(downloadDecisions);
