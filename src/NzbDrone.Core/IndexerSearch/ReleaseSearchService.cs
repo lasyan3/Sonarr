@@ -23,6 +23,7 @@ namespace NzbDrone.Core.IndexerSearch
         Task<List<DownloadDecision>> EpisodeSearch(Episode episode, bool userInvokedSearch, bool interactiveSearch);
         Task<List<DownloadDecision>> SeasonSearch(int seriesId, int seasonNumber, bool missingOnly, bool monitoredOnly, bool userInvokedSearch, bool interactiveSearch);
         Task<List<DownloadDecision>> SeasonSearch(int seriesId, int seasonNumber, List<Episode> episodes, bool monitoredOnly, bool userInvokedSearch, bool interactiveSearch);
+        Task<List<DownloadDecision>> SerieSearch(int seriesId, bool userInvokedSearch, bool interactiveSearch);
     }
 
     public class ReleaseSearchService : ISearchForReleases
@@ -164,6 +165,17 @@ namespace NzbDrone.Core.IndexerSearch
                     }
                 }
             }
+
+            return DeDupeDecisions(downloadDecisions);
+        }
+
+        public async Task<List<DownloadDecision>> SerieSearch(int seriesId, bool userInvokedSearch, bool interactiveSearch)
+        {
+            var series = _seriesService.GetSeries(seriesId);
+
+            var searchSpec = Get<SerieSearchCriteria>(series, userInvokedSearch, interactiveSearch);
+
+            var downloadDecisions = await Dispatch(indexer => indexer.Fetch(searchSpec), searchSpec);
 
             return DeDupeDecisions(downloadDecisions);
         }
@@ -546,6 +558,20 @@ namespace NzbDrone.Core.IndexerSearch
             return spec;
         }
 
+        private TSpec Get<TSpec>(Series series, bool userInvokedSearch, bool interactiveSearch)
+            where TSpec : SearchCriteriaBase, new()
+        {
+            var spec = new TSpec();
+
+            spec.Series = series;
+            spec.SceneTitles = new List<string> { series.Title };
+
+            spec.UserInvokedSearch = userInvokedSearch;
+            spec.InteractiveSearch = interactiveSearch;
+
+            return spec;
+        }
+
         private async Task<List<DownloadDecision>> Dispatch(Func<IIndexer, Task<IList<ReleaseInfo>>> searchAction, SearchCriteriaBase criteriaBase)
         {
             var indexers = criteriaBase.InteractiveSearch ?
@@ -566,7 +592,7 @@ namespace NzbDrone.Core.IndexerSearch
             _logger.ProgressDebug("Total of {0} reports were found for {1} from {2} indexers", reports.Count, criteriaBase, indexers.Count);
 
             // Update the last search time for all episodes if at least 1 indexer was searched.
-            if (indexers.Any())
+            if (indexers.Any() && criteriaBase.Episodes is not null)
             {
                 var lastSearchTime = DateTime.UtcNow;
                 _logger.Debug("Setting last search time to: {0}", lastSearchTime);

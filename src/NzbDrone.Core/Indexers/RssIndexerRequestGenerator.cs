@@ -55,5 +55,10 @@ namespace NzbDrone.Core.Indexers
         {
             return new IndexerPageableRequestChain();
         }
+
+        public virtual IndexerPageableRequestChain GetSearchRequests(SerieSearchCriteria searchCriteria)
+        {
+            return new IndexerPageableRequestChain();
+        }
     }
 }

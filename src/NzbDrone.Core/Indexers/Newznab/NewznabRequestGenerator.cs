@@ -494,6 +494,50 @@ namespace NzbDrone.Core.Indexers.Newznab
             return pageableRequests;
         }
 
+        public virtual IndexerPageableRequestChain GetSearchRequests(SerieSearchCriteria searchCriteria)
+        {
+            var pageableRequests = new IndexerPageableRequestChain();
+
+            if (!SupportsTvTextSearches && !SupportsTvIdSearches)
+            {
+                _logger.Debug("Indexer capabilities lacking q, title, tvdbid, imdbid, rid and tvmazeid parameters, no Daily series search possible: {0}", Definition.Name);
+
+                return pageableRequests;
+            }
+
+            if (searchCriteria.SearchMode.HasFlag(SearchMode.SearchID) || searchCriteria.SearchMode == SearchMode.Default)
+            {
+                AddTvIdPageableRequests(pageableRequests,
+                    Settings.Categories,
+                    searchCriteria,
+                    string.Empty);
+            }
+
+            if (searchCriteria.SearchMode.HasFlag(SearchMode.SearchTitle))
+            {
+                AddTitlePageableRequests(pageableRequests,
+                    Settings.Categories,
+                    searchCriteria,
+                    "+INTEGRAL");
+            }
+
+            pageableRequests.AddTier();
+
+            if (searchCriteria.SearchMode == SearchMode.Default)
+            {
+                AddTitlePageableRequests(pageableRequests,
+                    Settings.Categories,
+                    searchCriteria,
+                    "+INTEGRAL");
+                AddTitlePageableRequests(pageableRequests,
+                    Settings.Categories,
+                    searchCriteria,
+                    "+INTEGRALE");
+            }
+
+            return pageableRequests;
+        }
+
         private void AddTvIdPageableRequests(IndexerPageableRequestChain chain, IEnumerable<int> categories, SearchCriteriaBase searchCriteria, string parameters)
         {
             var includeTvdbSearch = SupportsTvdbSearch && searchCriteria.Series.TvdbId > 0;
