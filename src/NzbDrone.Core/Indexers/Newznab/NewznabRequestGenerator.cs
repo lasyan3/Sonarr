@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using NLog;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
@@ -588,6 +589,9 @@ namespace NzbDrone.Core.Indexers.Newznab
             else if (SupportsTvQuerySearch)
             {
                 var queryTitles = TvTextSearchEngine == "raw" ? searchCriteria.AllSceneTitles : searchCriteria.CleanSceneTitles;
+                queryTitles.AddRange(queryTitles.Select(t => Regex.Replace(t, @"\s+\(\d{4}\)$", "")).ToList());
+                queryTitles = queryTitles.Distinct().ToList();
+
                 foreach (var queryTitle in queryTitles)
                 {
                     chain.Add(GetPagedRequests(MaxPages,
