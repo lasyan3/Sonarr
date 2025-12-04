@@ -13,7 +13,7 @@
   "forwardPorts": [8989],
   "customizations": {
     "vscode": {
-      "extensions": ["esbenp.prettier-vscode"]
+      "extensions": ["esbenp.prettier-vscode",         "ms-dotnettools.csharp"]
     }
   }
 }
