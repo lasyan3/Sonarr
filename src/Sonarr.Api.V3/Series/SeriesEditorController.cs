@@ -57,6 +57,11 @@ namespace Sonarr.Api.V3.Series
                     series.SeasonFolder = resource.SeasonFolder.Value;
                 }
 
+                if (resource.IgnoreAlternateTitles.HasValue)
+                {
+                    series.IgnoreAlternateTitles = resource.IgnoreAlternateTitles.Value;
+                }
+
                 if (resource.RootFolderPath.IsNotNullOrWhiteSpace())
                 {
                     series.RootFolderPath = resource.RootFolderPath;

@@ -172,7 +172,11 @@ namespace NzbDrone.Core.IndexerSearch
         {
             var dict = new Dictionary<SceneSeasonMapping, SceneSeasonMapping>();
 
-            var sceneMappings = _sceneMapping.FindByTvdbId(series.TvdbId);
+            var sceneMappings = new List<SceneMapping>();
+            if (!series.IgnoreAlternateTitles)
+            {
+                sceneMappings = _sceneMapping.FindByTvdbId(series.TvdbId);
+            }
 
             // Group the episode by SceneSeasonNumber/SeasonNumber, in 99% of cases this will result in 1 groupedEpisode
             var groupedEpisodes = episodes.ToLookup(v => ((v.SceneSeasonNumber ?? v.SeasonNumber) * 100000) + v.SeasonNumber);
@@ -217,7 +221,11 @@ namespace NzbDrone.Core.IndexerSearch
         {
             var dict = new Dictionary<SceneEpisodeMapping, SceneEpisodeMapping>();
 
-            var sceneMappings = _sceneMapping.FindByTvdbId(series.TvdbId);
+            var sceneMappings = new List<SceneMapping>();
+            if (!series.IgnoreAlternateTitles)
+            {
+                sceneMappings = _sceneMapping.FindByTvdbId(series.TvdbId);
+            }
 
             var episodeMappings = GetSceneEpisodeMappings(series, episode, sceneMappings);
 

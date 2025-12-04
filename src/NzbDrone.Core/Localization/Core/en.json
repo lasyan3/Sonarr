@@ -2111,6 +2111,8 @@
   "UseProxy": "Use Proxy",
   "UseSeasonFolder": "Use Season Folder",
   "UseSeasonFolderHelpText": "Sort episodes into season folders",
+  "IgnoreAlternateTitles": "Ignore alternate titles",
+  "IgnoreAlternateTitlesHelpText": "Searching won't use alternate titles",
   "UseSsl": "Use SSL",
   "Usenet": "Usenet",
   "UsenetBlackhole": "Usenet Blackhole",

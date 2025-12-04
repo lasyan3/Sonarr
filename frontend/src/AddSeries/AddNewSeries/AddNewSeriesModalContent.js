@@ -73,6 +73,7 @@ class AddNewSeriesModalContent extends Component {
       qualityProfileId,
       seriesType,
       seasonFolder,
+	  ignoreAlternateTitles,
       searchForMissingEpisodes,
       searchForCutoffUnmetEpisodes,
       folder,
@@ -214,6 +215,17 @@ class AddNewSeriesModalContent extends Component {
                 </FormGroup>
 
                 <FormGroup>
+                  <FormLabel>{translate('IgnoreAlternateTitles')}</FormLabel>
+
+                  <FormInputGroup
+                    type={inputTypes.CHECK}
+                    name="ignoreAlternateTitles"
+                    onChange={onInputChange}
+                    {...ignoreAlternateTitles}
+                  />
+                </FormGroup>
+
+                <FormGroup>
                   <FormLabel>{translate('Tags')}</FormLabel>
 
                   <FormInputGroup
@@ -286,6 +298,7 @@ AddNewSeriesModalContent.propTypes = {
   qualityProfileId: PropTypes.object,
   seriesType: PropTypes.object.isRequired,
   seasonFolder: PropTypes.object.isRequired,
+  ignoreAlternateTitles: PropTypes.object.isRequired,
   searchForMissingEpisodes: PropTypes.object.isRequired,
   searchForCutoffUnmetEpisodes: PropTypes.object.isRequired,
   folder: PropTypes.string.isRequired,

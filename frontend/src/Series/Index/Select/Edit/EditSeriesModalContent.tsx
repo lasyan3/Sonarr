@@ -18,6 +18,7 @@ interface SavePayload {
   qualityProfileId?: number;
   seriesType?: string;
   seasonFolder?: boolean;
+  ignoreAlternateTitles?: boolean;
   rootFolderPath?: string;
   moveFiles?: boolean;
 }
@@ -74,6 +75,28 @@ const seasonFolderOptions = [
   },
 ];
 
+const ignoreAlternateTitlesOptions = [
+  {
+    key: NO_CHANGE,
+    get value() {
+      return translate('NoChange');
+    },
+    isDisabled: true,
+  },
+  {
+    key: 'yes',
+    get value() {
+      return translate('Yes');
+    },
+  },
+  {
+    key: 'no',
+    get value() {
+      return translate('No');
+    },
+  },
+];
+
 function EditSeriesModalContent(props: EditSeriesModalContentProps) {
   const { seriesIds, onSavePress, onModalClose } = props;
 
@@ -86,6 +109,7 @@ function EditSeriesModalContent(props: EditSeriesModalContentProps) {
   const [seasonFolder, setSeasonFolder] = useState(NO_CHANGE);
   const [rootFolderPath, setRootFolderPath] = useState(NO_CHANGE);
   const [isConfirmMoveModalOpen, setIsConfirmMoveModalOpen] = useState(false);
+  const [ignoreAlternateTitles, setIgnoreAlternateTitles] = useState(NO_CHANGE);
 
   const save = useCallback(
     (moveFiles: boolean) => {
@@ -117,6 +141,11 @@ function EditSeriesModalContent(props: EditSeriesModalContentProps) {
         payload.seasonFolder = seasonFolder === 'yes';
       }
 
+      if (ignoreAlternateTitles !== NO_CHANGE) {
+        hasChanges = true;
+        payload.ignoreAlternateTitles = ignoreAlternateTitles === 'yes';
+      }
+
       if (rootFolderPath !== NO_CHANGE) {
         hasChanges = true;
         payload.rootFolderPath = rootFolderPath;
@@ -135,6 +164,7 @@ function EditSeriesModalContent(props: EditSeriesModalContentProps) {
       qualityProfileId,
       seriesType,
       seasonFolder,
+	  ignoreAlternateTitles,
       rootFolderPath,
       onSavePress,
       onModalClose,
@@ -158,6 +188,9 @@ function EditSeriesModalContent(props: EditSeriesModalContentProps) {
           break;
         case 'seasonFolder':
           setSeasonFolder(value);
+          break;
+        case 'ignoreAlternateTitles':
+          setIgnoreAlternateTitles(value);
           break;
         case 'rootFolderPath':
           setRootFolderPath(value);
@@ -258,6 +291,18 @@ function EditSeriesModalContent(props: EditSeriesModalContentProps) {
             name="seasonFolder"
             value={seasonFolder}
             values={seasonFolderOptions}
+            onChange={onInputChange}
+          />
+        </FormGroup>
+
+        <FormGroup>
+          <FormLabel>{translate('IgnoreAlternateTitles')}</FormLabel>
+
+          <FormInputGroup
+            type={inputTypes.SELECT}
+            name="ignoreAlternateTitles"
+            value={ignoreAlternateTitles}
+            values={ignoreAlternateTitlesOptions}
             onChange={onInputChange}
           />
         </FormGroup>
