@@ -421,9 +421,7 @@ namespace NzbDrone.Core.Indexers.Newznab
                         $"&season={NewznabifySeasonNumber(searchCriteria.SeasonNumber)}&ep={searchCriteria.EpisodeNumber}");
                 }
 
-                var queryTitles = TextSearchEngine == "raw" ? searchCriteria.AllSceneTitles : searchCriteria.CleanSceneTitles;
-
-                foreach (var queryTitle in queryTitles)
+                foreach (var queryTitle in searchCriteria.CleanSceneTitles)
                 {
                     pageableRequests.Add(GetPagedRequests(MaxPages,
                         Settings.AnimeCategories,
@@ -459,9 +457,7 @@ namespace NzbDrone.Core.Indexers.Newznab
                     searchCriteria,
                     searchCriteria.IgnoreSeason ? "" : $"&season={NewznabifySeasonNumber(searchCriteria.SeasonNumber)}");
 
-                var queryTitles = TextSearchEngine == "raw" ? searchCriteria.AllSceneTitles : searchCriteria.CleanSceneTitles;
-
-                foreach (var queryTitle in queryTitles)
+                foreach (var queryTitle in searchCriteria.CleanSceneTitles)
                 {
                     pageableRequests.Add(GetPagedRequests(MaxPages,
                         Settings.AnimeCategories,
@@ -587,8 +583,7 @@ namespace NzbDrone.Core.Indexers.Newznab
             }
             else if (SupportsTvQuerySearch)
             {
-                var queryTitles = TvTextSearchEngine == "raw" ? searchCriteria.AllSceneTitles : searchCriteria.CleanSceneTitles;
-                foreach (var queryTitle in queryTitles)
+                foreach (var queryTitle in searchCriteria.CleanSceneTitles)
                 {
                     chain.Add(GetPagedRequests(MaxPages,
                         Settings.Categories,
