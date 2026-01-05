@@ -56,6 +56,7 @@ namespace NzbDrone.Common.EnvironmentInfo
 
         public static IReadOnlyCollection<string> Addons { get; } = new List<string>()
         {
+            "Prowlarr search: never search using AllSceneTitles",
             "IgnoreAlternateTitles",
             "SeasonSearch: if season not finished, search individual episodes",
             "AnimeEpisodeSearch: search absolute episode with E",
