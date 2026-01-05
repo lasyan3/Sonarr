@@ -40,5 +40,6 @@ namespace Sonarr.Api.V3.System
         public string PackageUpdateMechanismMessage { get; set; }
         public Version DatabaseVersion { get; set; }
         public DatabaseType DatabaseType { get; set; }
+        public string[] SylAddons { get; set; }
     }
 }
