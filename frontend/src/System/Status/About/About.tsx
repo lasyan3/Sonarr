@@ -29,6 +29,7 @@ function About() {
     startupPath,
     mode,
     startTime,
+	sylAddons,
   } = item;
 
   useEffect(() => {
@@ -57,6 +58,18 @@ function About() {
             }
           />
         )}
+
+        {sylAddons ? (
+			<DescriptionList className={styles.descriptionList}>
+				{sylAddons.map((addon, index) => {
+					if (index == 0) {
+						return <DescriptionListItem title={translate('SylAddons')} data={addon} />;
+					} else {
+						return <DescriptionListItem data={addon} />;
+					}
+				})}
+			</DescriptionList>
+        ) : null}
 
         {isNetCore ? (
           <DescriptionListItem

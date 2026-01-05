@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
@@ -89,7 +90,8 @@ namespace Sonarr.Api.V3.System
                 PackageVersion = _deploymentInfoProvider.PackageVersion,
                 PackageAuthor = _deploymentInfoProvider.PackageAuthor,
                 PackageUpdateMechanism = _deploymentInfoProvider.PackageUpdateMechanism,
-                PackageUpdateMechanismMessage = _deploymentInfoProvider.PackageUpdateMechanismMessage
+                PackageUpdateMechanismMessage = _deploymentInfoProvider.PackageUpdateMechanismMessage,
+                SylAddons = BuildInfo.Addons.ToArray(),
             };
         }
 

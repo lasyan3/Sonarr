@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -52,5 +53,14 @@ namespace NzbDrone.Common.EnvironmentInfo
 #endif
             }
         }
+
+        public static IReadOnlyCollection<string> Addons { get; } = new List<string>()
+        {
+            "IgnoreAlternateTitles",
+            "SeasonSearch: if season not finished, search individual episodes",
+            "AnimeEpisodeSearch: search absolute episode with E",
+            "AnimeFullSearchCriteria : if no results found and only 1 season, try search without season number (GunGrave)",
+            "SearchAnimeSeason: search individual episodes only if this is the last season and serie is not finished",
+        };
     }
 }

@@ -31,6 +31,7 @@ interface SystemStatus {
   startupPath: string;
   urlBase: string;
   version: string;
+  sylAddons: string[];
 }
 
 export default SystemStatus;
