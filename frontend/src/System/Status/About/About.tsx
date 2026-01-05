@@ -29,7 +29,7 @@ function About() {
     startupPath,
     mode,
     startTime,
-	sylAddons,
+    sylAddons,
   } = item;
 
   useEffect(() => {

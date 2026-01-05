@@ -224,7 +224,7 @@ namespace NzbDrone.Core.IndexerSearch
             var sceneMappings = new List<SceneMapping>();
             if (!series.IgnoreAlternateTitles)
             {
-                sceneMappings = _sceneMapping.FindByTvdbId(series.TvdbId);
+            sceneMappings = _sceneMapping.FindByTvdbId(series.TvdbId);
             }
 
             var episodeMappings = GetSceneEpisodeMappings(series, episode, sceneMappings);
@@ -495,9 +495,13 @@ namespace NzbDrone.Core.IndexerSearch
             var spec = new TSpec();
 
             spec.Series = series;
-            spec.SceneTitles = _sceneMapping.GetSceneNames(series.TvdbId,
-                                                           episodes.Select(e => e.SeasonNumber).Distinct().ToList(),
-                                                           episodes.Select(e => e.SceneSeasonNumber ?? e.SeasonNumber).Distinct().ToList());
+            spec.SceneTitles = new List<string>();
+            if (!series.IgnoreAlternateTitles)
+            {
+                spec.SceneTitles = _sceneMapping.GetSceneNames(series.TvdbId,
+                                                               episodes.Select(e => e.SeasonNumber).Distinct().ToList(),
+                                                               episodes.Select(e => e.SceneSeasonNumber ?? e.SeasonNumber).Distinct().ToList());
+            }
 
             spec.Episodes = episodes;
             spec.MonitoredEpisodesOnly = monitoredOnly;
