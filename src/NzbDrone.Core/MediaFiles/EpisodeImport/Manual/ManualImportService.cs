@@ -272,7 +272,7 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Manual
                 // teaching FilterPaths to know whether it's processing a file or a folder and changing it's filtering based on that.
 
                 // If the series is unknown for the directory and there are more than 100 files in the folder don't process the items before returning.
-                var files = _diskScanService.FilterPaths(rootFolder, _diskScanService.GetVideoFiles(baseFolder, false));
+                var files = _diskScanService.FilterPaths(rootFolder, _diskScanService.GetVideoFiles(baseFolder, false, ignoreLinks: true));
 
                 if (files.Count > 100)
                 {
@@ -289,7 +289,7 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Manual
             }
 
             var folderInfo = Parser.Parser.ParseTitle(directoryInfo.Name);
-            var seriesFiles = _diskScanService.FilterPaths(rootFolder, _diskScanService.GetVideoFiles(baseFolder).ToList());
+            var seriesFiles = _diskScanService.FilterPaths(rootFolder, _diskScanService.GetVideoFiles(baseFolder, ignoreLinks: true).ToList());
             var decisions = _importDecisionMaker.GetImportDecisions(seriesFiles, series, downloadClientItem, folderInfo, SceneSource(series, baseFolder), filterExistingFiles);
 
             return decisions.Select(decision => MapItem(decision, rootFolder, downloadId, directoryInfo.Name)).ToList();

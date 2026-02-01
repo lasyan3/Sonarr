@@ -67,7 +67,7 @@ namespace NzbDrone.Core.Test.ProviderTests.RecycleBinProviderTests
             WithRecycleBin();
             var path = @"C:\Test\TV\30 Rock".AsOsAgnostic();
 
-            Mocker.GetMock<IDiskProvider>().Setup(s => s.GetFiles(@"C:\Test\Recycle Bin\30 Rock".AsOsAgnostic(), true))
+            Mocker.GetMock<IDiskProvider>().Setup(s => s.GetFiles(@"C:\Test\Recycle Bin\30 Rock".AsOsAgnostic(), true, It.IsAny<bool>()))
                                            .Returns(new[] { "File1", "File2", "File3" });
 
             Mocker.Resolve<RecycleBinProvider>().DeleteFolder(path);

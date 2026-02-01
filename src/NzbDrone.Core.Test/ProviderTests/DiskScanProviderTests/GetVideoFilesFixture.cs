@@ -37,7 +37,7 @@ namespace NzbDrone.Core.Test.ProviderTests.DiskScanProviderTests
         {
             var filesToReturn = files.ToArray();
             Mocker.GetMock<IDiskProvider>()
-                  .Setup(s => s.GetFiles(It.IsAny<string>(), true))
+                  .Setup(s => s.GetFiles(It.IsAny<string>(), true, It.IsAny<bool>()))
                   .Returns(filesToReturn);
         }
 
@@ -48,8 +48,8 @@ namespace NzbDrone.Core.Test.ProviderTests.DiskScanProviderTests
 
             Subject.GetVideoFiles(path);
 
-            Mocker.GetMock<IDiskProvider>().Verify(s => s.GetFiles(path, true), Times.Once());
-            Mocker.GetMock<IDiskProvider>().Verify(s => s.GetFiles(path, false), Times.Never());
+            Mocker.GetMock<IDiskProvider>().Verify(s => s.GetFiles(path, true, It.IsAny<bool>()), Times.Once());
+            Mocker.GetMock<IDiskProvider>().Verify(s => s.GetFiles(path, false, It.IsAny<bool>()), Times.Never());
         }
 
         [Test]
@@ -59,8 +59,8 @@ namespace NzbDrone.Core.Test.ProviderTests.DiskScanProviderTests
 
             Subject.GetVideoFiles(path, true);
 
-            Mocker.GetMock<IDiskProvider>().Verify(s => s.GetFiles(path, true), Times.Once());
-            Mocker.GetMock<IDiskProvider>().Verify(s => s.GetFiles(path, false), Times.Never());
+            Mocker.GetMock<IDiskProvider>().Verify(s => s.GetFiles(path, true, It.IsAny<bool>()), Times.Once());
+            Mocker.GetMock<IDiskProvider>().Verify(s => s.GetFiles(path, false, It.IsAny<bool>()), Times.Never());
         }
 
         [Test]
@@ -70,8 +70,8 @@ namespace NzbDrone.Core.Test.ProviderTests.DiskScanProviderTests
 
             Subject.GetVideoFiles(path, false);
 
-            Mocker.GetMock<IDiskProvider>().Verify(s => s.GetFiles(path, true), Times.Never());
-            Mocker.GetMock<IDiskProvider>().Verify(s => s.GetFiles(path, false), Times.Once());
+            Mocker.GetMock<IDiskProvider>().Verify(s => s.GetFiles(path, true, It.IsAny<bool>()), Times.Never());
+            Mocker.GetMock<IDiskProvider>().Verify(s => s.GetFiles(path, false, It.IsAny<bool>()), Times.Once());
         }
 
         [Test]

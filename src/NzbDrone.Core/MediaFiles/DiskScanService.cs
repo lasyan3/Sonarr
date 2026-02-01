@@ -23,8 +23,8 @@ namespace NzbDrone.Core.MediaFiles
     public interface IDiskScanService
     {
         void Scan(Series series);
-        string[] GetVideoFiles(string path, bool allDirectories = true);
-        string[] GetNonVideoFiles(string path, bool allDirectories = true);
+        string[] GetVideoFiles(string path, bool allDirectories = true, bool ignoreLinks = false);
+        string[] GetNonVideoFiles(string path, bool allDirectories = true, bool ignoreLinks = false);
         List<string> FilterPaths(string basePath, IEnumerable<string> files, bool filterExtras = true);
     }
 
@@ -199,11 +199,11 @@ namespace NzbDrone.Core.MediaFiles
             _eventAggregator.PublishEvent(new SeriesScannedEvent(series, possibleExtraFiles));
         }
 
-        public string[] GetVideoFiles(string path, bool allDirectories = true)
+        public string[] GetVideoFiles(string path, bool allDirectories = true, bool ignoreLinks = false)
         {
             _logger.Debug("Scanning '{0}' for video files", path);
 
-            var filesOnDisk = _diskProvider.GetFiles(path, allDirectories).ToList();
+            var filesOnDisk = _diskProvider.GetFiles(path, allDirectories, ignoreLinks).ToList();
 
             var mediaFileList = filesOnDisk.Where(file => MediaFileExtensions.Extensions.Contains(Path.GetExtension(file)))
                                            .ToList();
@@ -214,11 +214,11 @@ namespace NzbDrone.Core.MediaFiles
             return mediaFileList.ToArray();
         }
 
-        public string[] GetNonVideoFiles(string path, bool allDirectories = true)
+        public string[] GetNonVideoFiles(string path, bool allDirectories = true, bool ignoreLinks = false)
         {
             _logger.Debug("Scanning '{0}' for non-video files", path);
 
-            var filesOnDisk = _diskProvider.GetFiles(path, allDirectories).ToList();
+            var filesOnDisk = _diskProvider.GetFiles(path, allDirectories, ignoreLinks).ToList();
 
             var mediaFileList = filesOnDisk.Where(file => !MediaFileExtensions.Extensions.Contains(Path.GetExtension(file)))
                                            .ToList();

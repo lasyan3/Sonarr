@@ -32,7 +32,7 @@ namespace NzbDrone.Core.Test.MediaFiles
         [SetUp]
         public void Setup()
         {
-            Mocker.GetMock<IDiskScanService>().Setup(c => c.GetVideoFiles(It.IsAny<string>(), It.IsAny<bool>()))
+            Mocker.GetMock<IDiskScanService>().Setup(c => c.GetVideoFiles(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
                   .Returns(_videoFiles);
 
             Mocker.GetMock<IDiskScanService>().Setup(c => c.FilterPaths(It.IsAny<string>(), It.IsAny<IEnumerable<string>>(), It.IsAny<bool>()))
@@ -91,7 +91,7 @@ namespace NzbDrone.Core.Test.MediaFiles
 
         private void WasImportedResponse()
         {
-            Mocker.GetMock<IDiskScanService>().Setup(c => c.GetVideoFiles(It.IsAny<string>(), It.IsAny<bool>()))
+            Mocker.GetMock<IDiskScanService>().Setup(c => c.GetVideoFiles(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
                   .Returns(Array.Empty<string>());
         }
 
@@ -140,13 +140,13 @@ namespace NzbDrone.Core.Test.MediaFiles
                   .Returns(true);
 
             Mocker.GetMock<IDiskScanService>()
-                  .Setup(c => c.GetVideoFiles(It.IsAny<string>(), It.IsAny<bool>()))
+                  .Setup(c => c.GetVideoFiles(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
                   .Returns(Array.Empty<string>());
 
             Subject.ProcessRootFolder(new DirectoryInfo(_droneFactory));
 
             Mocker.GetMock<IDiskScanService>()
-                  .Verify(v => v.GetVideoFiles(It.IsAny<string>(), true), Times.Never());
+                  .Verify(v => v.GetVideoFiles(It.IsAny<string>(), true, It.IsAny<bool>()), Times.Never());
 
             ExceptionVerification.ExpectedWarns(1);
         }
@@ -285,7 +285,7 @@ namespace NzbDrone.Core.Test.MediaFiles
                   .Returns(DetectSampleResult.Sample);
 
             Mocker.GetMock<IDiskProvider>()
-                  .Setup(s => s.GetFiles(It.IsAny<string>(), true))
+                  .Setup(s => s.GetFiles(It.IsAny<string>(), true, It.IsAny<bool>()))
                   .Returns(new[] { _videoFiles.First().Replace(".ext", ".rar") });
 
             Mocker.GetMock<IDiskProvider>()
@@ -311,7 +311,7 @@ namespace NzbDrone.Core.Test.MediaFiles
             Mocker.GetMock<IDiskProvider>().Setup(c => c.FolderExists(folderName))
                   .Returns(true);
 
-            Mocker.GetMock<IDiskProvider>().Setup(c => c.GetFiles(folderName, false))
+            Mocker.GetMock<IDiskProvider>().Setup(c => c.GetFiles(folderName, false, It.IsAny<bool>()))
                   .Returns(new[] { fileName });
 
             var localEpisode = new LocalEpisode();
@@ -464,7 +464,7 @@ namespace NzbDrone.Core.Test.MediaFiles
                 .Returns(imported.Select(i => new ImportResult(i)).ToList());
 
             Mocker.GetMock<IDiskProvider>()
-                .Setup(s => s.GetFiles(It.IsAny<string>(), true))
+                .Setup(s => s.GetFiles(It.IsAny<string>(), true, It.IsAny<bool>()))
                 .Returns(new[] { _videoFiles.First().Replace(".ext", ".rar") });
 
             var result = Subject.ProcessPath(path);
@@ -490,7 +490,7 @@ namespace NzbDrone.Core.Test.MediaFiles
                 .Returns(imported.Select(i => new ImportResult(i)).ToList());
 
             Mocker.GetMock<IDiskProvider>()
-                .Setup(s => s.GetFiles(It.IsAny<string>(), true))
+                .Setup(s => s.GetFiles(It.IsAny<string>(), true, It.IsAny<bool>()))
                 .Returns(new[] { _videoFiles.First().Replace(".ext", ".exe") });
 
             var result = Subject.ProcessPath(path);

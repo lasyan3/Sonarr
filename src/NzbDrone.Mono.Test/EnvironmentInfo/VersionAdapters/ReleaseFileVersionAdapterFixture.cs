@@ -35,7 +35,7 @@ namespace NzbDrone.Mono.Test.EnvironmentInfo.VersionAdapters
             Subject.Read().Should().BeNull();
 
             Mocker.GetMock<IDiskProvider>()
-              .Verify(c => c.GetFiles(It.IsAny<string>(), false), Times.Never());
+              .Verify(c => c.GetFiles(It.IsAny<string>(), false, It.IsAny<bool>()), Times.Never());
 
             Subject.Read().Should().BeNull();
         }
@@ -47,7 +47,7 @@ namespace NzbDrone.Mono.Test.EnvironmentInfo.VersionAdapters
             Subject.Read().Should().BeNull();
 
             Mocker.GetMock<IDiskProvider>()
-              .Setup(c => c.GetFiles(It.IsAny<string>(), false)).Returns(Array.Empty<string>());
+              .Setup(c => c.GetFiles(It.IsAny<string>(), false, It.IsAny<bool>())).Returns(Array.Empty<string>());
 
             Subject.Read().Should().BeNull();
         }
@@ -59,7 +59,7 @@ namespace NzbDrone.Mono.Test.EnvironmentInfo.VersionAdapters
             Subject.Read().Should().BeNull();
 
             Mocker.GetMock<IDiskProvider>()
-              .Setup(c => c.GetFiles(It.IsAny<string>(), false)).Returns(new[]
+              .Setup(c => c.GetFiles(It.IsAny<string>(), false, It.IsAny<bool>())).Returns(new[]
                 {
                     "/etc/lsb-release",
                     "/etc/os-release"

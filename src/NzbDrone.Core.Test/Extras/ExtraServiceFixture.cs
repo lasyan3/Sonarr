@@ -121,7 +121,7 @@ namespace NzbDrone.Core.Test.Extras
                 WithExistingFile(file);
             }
 
-            Mocker.GetMock<IDiskProvider>().Setup(s => s.GetFiles(_episodeFolder, It.IsAny<bool>()))
+            Mocker.GetMock<IDiskProvider>().Setup(s => s.GetFiles(_episodeFolder, It.IsAny<bool>(), It.IsAny<bool>()))
                   .Returns(files.ToArray());
         }
 
@@ -224,8 +224,8 @@ namespace NzbDrone.Core.Test.Extras
 
             Subject.ImportEpisode(_localEpisode, _episodeFile, true);
 
-            Mocker.GetMock<IDiskProvider>().Verify(v => v.GetFiles(_episodeFolder, true), Times.Once);
-            Mocker.GetMock<IDiskProvider>().Verify(v => v.GetFiles(_episodeFolder, false), Times.Never);
+            Mocker.GetMock<IDiskProvider>().Verify(v => v.GetFiles(_episodeFolder, true, It.IsAny<bool>()), Times.Once);
+            Mocker.GetMock<IDiskProvider>().Verify(v => v.GetFiles(_episodeFolder, false, It.IsAny<bool>()), Times.Never);
         }
 
         [Test]
@@ -245,8 +245,8 @@ namespace NzbDrone.Core.Test.Extras
 
             Subject.ImportEpisode(_localEpisode, _episodeFile, true);
 
-            Mocker.GetMock<IDiskProvider>().Verify(v => v.GetFiles(_episodeFolder, true), Times.Never);
-            Mocker.GetMock<IDiskProvider>().Verify(v => v.GetFiles(_episodeFolder, false), Times.Once);
+            Mocker.GetMock<IDiskProvider>().Verify(v => v.GetFiles(_episodeFolder, true, It.IsAny<bool>()), Times.Never);
+            Mocker.GetMock<IDiskProvider>().Verify(v => v.GetFiles(_episodeFolder, false, It.IsAny<bool>()), Times.Once);
         }
     }
 }

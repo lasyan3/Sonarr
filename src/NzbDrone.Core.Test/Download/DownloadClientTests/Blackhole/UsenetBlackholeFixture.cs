@@ -71,7 +71,7 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests.Blackhole
                 .Returns(new[] { targetDir });
 
             Mocker.GetMock<IDiskProvider>()
-                .Setup(c => c.GetFiles(targetDir, true))
+                .Setup(c => c.GetFiles(targetDir, true, It.IsAny<bool>()))
                 .Returns(new[] { Path.Combine(targetDir, "somefile.mkv") });
 
             Mocker.GetMock<IDiskProvider>()

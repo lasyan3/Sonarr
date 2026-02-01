@@ -62,6 +62,7 @@ namespace NzbDrone.Common.EnvironmentInfo
             "AnimeEpisodeSearch: search absolute episode with E",
             "AnimeFullSearchCriteria : if no results found and only 1 season, try search without season number (GunGrave)",
             "SearchAnimeSeason: search individual episodes only if this is the last season and serie is not finished",
+            "ManualImport: ignore links"
         };
     }
 }
