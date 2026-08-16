@@ -56,13 +56,13 @@ namespace NzbDrone.Common.EnvironmentInfo
 
         public static IReadOnlyCollection<string> Addons { get; } = new List<string>()
         {
-            "Prowlarr search: never search using AllSceneTitles",
-            "IgnoreAlternateTitles",
-            "SeasonSearch: if season not finished, search individual episodes",
-            "AnimeEpisodeSearch: search absolute episode with E",
-            "AnimeFullSearchCriteria : if no results found and only 1 season, try search without season number (GunGrave)",
-            "SearchAnimeSeason: search individual episodes only if this is the last season and serie is not finished",
-            "ManualImport: ignore links"
+            "Global Searching: always use CleanSceneTitles during search (not sure what it does)",
+            "Global Searching: add option to ignore alternate titles",
+            "Season Searching: if season not fully aired, search individual episodes",
+            "Anime Episode Search: add search using absolute episode with E (One Piece E1152)",
+            "Anime Season Search: if no results found and anime has only 1 season, search without season number (GunGrave)",
+            "Anime Season Search: do not search individual episodes unless the season is not fully aired",
+            "Manual import: ignore files which are links"
         };
     }
 }
