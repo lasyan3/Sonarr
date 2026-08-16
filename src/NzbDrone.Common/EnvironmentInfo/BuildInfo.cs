@@ -56,7 +56,6 @@ namespace NzbDrone.Common.EnvironmentInfo
 
         public static IReadOnlyCollection<string> Addons { get; } = new List<string>()
         {
-            "Global Searching: always use CleanSceneTitles during search (not sure what it does)",
             "Global Searching: add option to ignore alternate titles",
             "Season Searching: if season not fully aired, search individual episodes",
             "Anime Episode Search: add search using absolute episode with E (One Piece E1152)",
