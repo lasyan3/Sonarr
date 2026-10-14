@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 using NLog;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Extensions;
+using NzbDrone.Core.Exceptions;
 using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Parser;
+using NzbDrone.Core.Tv;
 using NzbDrone.Core.Tv.Events;
 
 namespace NzbDrone.Core.DataAugmentation.Scene
@@ -19,6 +22,12 @@ namespace NzbDrone.Core.DataAugmentation.Scene
         List<SceneMapping> FindByTvdbId(int tvdbId);
         SceneMapping FindSceneMapping(string sceneTitle, string releaseTitle, int sceneSeasonNumber);
         int? GetSceneSeasonNumber(string seriesTitle, string releaseTitle);
+        List<SceneMapping> GetAllByTvdbId(int tvdbId);
+        List<SceneMappingExclusion> GetExclusions(int tvdbId);
+        SceneMapping AddCustomMapping(SceneMapping mapping);
+        void DeleteCustomMapping(int id);
+        void Exclude(int tvdbId, string title);
+        void RemoveExclusion(int tvdbId, string title);
     }
 
     public class SceneMappingService : ISceneMappingService,
@@ -27,7 +36,11 @@ namespace NzbDrone.Core.DataAugmentation.Scene
                                        IHandle<SeriesImportedEvent>,
                                        IExecute<UpdateSceneMappingCommand>
     {
+        public const string CustomMappingType = "Custom";
+
         private readonly ISceneMappingRepository _repository;
+        private readonly ISceneMappingExclusionRepository _exclusionRepository;
+        private readonly ISeriesService _seriesService;
         private readonly IEnumerable<ISceneMappingProvider> _sceneMappingProviders;
         private readonly IEventAggregator _eventAggregator;
         private readonly Logger _logger;
@@ -36,12 +49,16 @@ namespace NzbDrone.Core.DataAugmentation.Scene
         private bool _updatedAfterStartup;
 
         public SceneMappingService(ISceneMappingRepository repository,
+                                   ISceneMappingExclusionRepository exclusionRepository,
+                                   ISeriesService seriesService,
                                    ICacheManager cacheManager,
                                    IEnumerable<ISceneMappingProvider> sceneMappingProviders,
                                    IEventAggregator eventAggregator,
                                    Logger logger)
         {
             _repository = repository;
+            _exclusionRepository = exclusionRepository;
+            _seriesService = seriesService;
             _sceneMappingProviders = sceneMappingProviders;
             _eventAggregator = eventAggregator;
             _logger = logger;
@@ -128,6 +145,104 @@ namespace NzbDrone.Core.DataAugmentation.Scene
         public int? GetSceneSeasonNumber(string seriesTitle, string releaseTitle)
         {
             return FindSceneMapping(seriesTitle, releaseTitle, -1)?.SceneSeasonNumber;
+        }
+
+        public List<SceneMapping> GetAllByTvdbId(int tvdbId)
+        {
+            return _repository.FindByTvdbid(tvdbId);
+        }
+
+        public List<SceneMappingExclusion> GetExclusions(int tvdbId)
+        {
+            return _exclusionRepository.FindByTvdbId(tvdbId);
+        }
+
+        public SceneMapping AddCustomMapping(SceneMapping mapping)
+        {
+            if (mapping.Title.IsNullOrWhiteSpace())
+            {
+                throw new NzbDroneClientException(HttpStatusCode.BadRequest, "Alternate title cannot be empty");
+            }
+
+            mapping.Title = mapping.Title.Trim();
+            mapping.ParseTerm = mapping.Title.CleanSeriesTitle();
+            mapping.SearchTerm = mapping.SearchTerm.IsNullOrWhiteSpace() ? mapping.Title : mapping.SearchTerm.Trim();
+            mapping.Type = CustomMappingType;
+
+            var excludedParseTerms = GetExcludedParseTerms();
+            var existing = _repository.All()
+                                      .Where(v => v.ParseTerm == mapping.ParseTerm && !excludedParseTerms.Contains(GetExclusionKey(v.TvdbId, v.ParseTerm)))
+                                      .ToList();
+
+            if (existing.Any(v => v.TvdbId != mapping.TvdbId))
+            {
+                throw new NzbDroneClientException(HttpStatusCode.Conflict, "Alternate title '{0}' is already used by another series", mapping.Title);
+            }
+
+            if (existing.Any(v => v.Type == CustomMappingType && v.SeasonNumber == mapping.SeasonNumber && v.SceneSeasonNumber == mapping.SceneSeasonNumber))
+            {
+                throw new NzbDroneClientException(HttpStatusCode.Conflict, "Alternate title '{0}' already exists", mapping.Title);
+            }
+
+            var series = _seriesService.FindByTitle(mapping.Title);
+
+            if (series != null && series.TvdbId != mapping.TvdbId)
+            {
+                throw new NzbDroneClientException(HttpStatusCode.Conflict, "Alternate title '{0}' matches the title of another series", mapping.Title);
+            }
+
+            _repository.Insert(mapping);
+            _logger.Debug("Added custom alternate title '{0}' for TVDB ID {1}", mapping.Title, mapping.TvdbId);
+
+            OnMappingsChanged();
+
+            return mapping;
+        }
+
+        public void DeleteCustomMapping(int id)
+        {
+            var mapping = _repository.Get(id);
+
+            if (mapping.Type != CustomMappingType)
+            {
+                throw new NzbDroneClientException(HttpStatusCode.BadRequest, "Only custom alternate titles can be deleted, exclude it instead");
+            }
+
+            _repository.Delete(id);
+            _logger.Debug("Deleted custom alternate title '{0}' for TVDB ID {1}", mapping.Title, mapping.TvdbId);
+
+            OnMappingsChanged();
+        }
+
+        public void Exclude(int tvdbId, string title)
+        {
+            var parseTerm = title.CleanSeriesTitle();
+
+            if (_exclusionRepository.FindByTvdbId(tvdbId).Any(v => v.ParseTerm == parseTerm))
+            {
+                return;
+            }
+
+            _exclusionRepository.Insert(new SceneMappingExclusion { TvdbId = tvdbId, ParseTerm = parseTerm });
+            _logger.Debug("Excluded alternate title '{0}' for TVDB ID {1}", title, tvdbId);
+
+            OnMappingsChanged();
+        }
+
+        public void RemoveExclusion(int tvdbId, string title)
+        {
+            var parseTerm = title.CleanSeriesTitle();
+            var exclusions = _exclusionRepository.FindByTvdbId(tvdbId).Where(v => v.ParseTerm == parseTerm).ToList();
+
+            if (exclusions.Empty())
+            {
+                return;
+            }
+
+            _exclusionRepository.DeleteMany(exclusions);
+            _logger.Debug("Removed exclusion of alternate title '{0}' for TVDB ID {1}", title, tvdbId);
+
+            OnMappingsChanged();
         }
 
         private void UpdateMappings()
@@ -221,10 +336,30 @@ namespace NzbDrone.Core.DataAugmentation.Scene
 
         private void RefreshCache()
         {
-            var mappings = _repository.All().ToList();
+            var excludedParseTerms = GetExcludedParseTerms();
+            var mappings = _repository.All()
+                                      .Where(v => !excludedParseTerms.Contains(GetExclusionKey(v.TvdbId, v.ParseTerm)))
+                                      .ToList();
 
             _getTvdbIdCache.Update(mappings.GroupBy(v => v.ParseTerm).ToDictionary(v => v.Key, v => v.ToList()));
             _findByTvdbIdCache.Update(mappings.GroupBy(v => v.TvdbId).ToDictionary(v => v.Key.ToString(), v => v.ToList()));
+        }
+
+        private void OnMappingsChanged()
+        {
+            RefreshCache();
+
+            _eventAggregator.PublishEvent(new SceneMappingsUpdatedEvent());
+        }
+
+        private HashSet<string> GetExcludedParseTerms()
+        {
+            return _exclusionRepository.All().Select(v => GetExclusionKey(v.TvdbId, v.ParseTerm)).ToHashSet();
+        }
+
+        private static string GetExclusionKey(int tvdbId, string parseTerm)
+        {
+            return $"{tvdbId}:{parseTerm}";
         }
 
         private List<SceneMapping> FilterSceneMappings(List<SceneMapping> candidates, string releaseTitle)

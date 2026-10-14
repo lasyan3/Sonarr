@@ -7,7 +7,9 @@ using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.DataAugmentation.Scene;
+using NzbDrone.Core.Exceptions;
 using NzbDrone.Core.Test.Framework;
+using NzbDrone.Core.Tv;
 using NzbDrone.Test.Common;
 
 namespace NzbDrone.Core.Test.DataAugmentation.Scene
@@ -370,6 +372,185 @@ namespace NzbDrone.Core.Test.DataAugmentation.Scene
             Mocker.GetMock<ISceneMappingRepository>().Setup(c => c.All()).Returns(mappings);
 
             Subject.FindTvdbId("Amareto", "Amareto.S01E01.720p.WEB-DL-Viva", 4).Should().Be(101);
+        }
+
+        [Test]
+        public void should_not_clear_custom_mappings_when_updating()
+        {
+            GivenProviders(new[] { _provider1, _provider2 });
+
+            Mocker.GetMock<ISceneMappingRepository>().Setup(c => c.All()).Returns(_fakeMappings);
+
+            Subject.Execute(new UpdateSceneMappingCommand());
+
+            Mocker.GetMock<ISceneMappingRepository>().Verify(c => c.Clear(SceneMappingService.CustomMappingType), Times.Never());
+        }
+
+        [Test]
+        public void should_not_return_excluded_mapping()
+        {
+            var mappings = new List<SceneMapping>
+            {
+                new SceneMapping { Title = "Amareto", ParseTerm = "amareto", SearchTerm = "Amareto", TvdbId = 100 }
+            };
+
+            Mocker.GetMock<ISceneMappingRepository>().Setup(c => c.All()).Returns(mappings);
+            GivenExclusions(new SceneMappingExclusion { TvdbId = 100, ParseTerm = "amareto" });
+
+            Subject.FindTvdbId("Amareto", null, -1).Should().BeNull();
+            Subject.GetSceneNames(100, new List<int> { 1 }, new List<int> { 1 }).Should().BeEmpty();
+            Subject.FindByTvdbId(100).Should().BeEmpty();
+        }
+
+        [Test]
+        public void should_only_exclude_mapping_for_excluded_series()
+        {
+            var mappings = new List<SceneMapping>
+            {
+                new SceneMapping { Title = "Amareto", ParseTerm = "amareto", SearchTerm = "Amareto", TvdbId = 100 },
+                new SceneMapping { Title = "Amareto", ParseTerm = "amareto", SearchTerm = "Amareto", TvdbId = 101 }
+            };
+
+            Mocker.GetMock<ISceneMappingRepository>().Setup(c => c.All()).Returns(mappings);
+            GivenExclusions(new SceneMappingExclusion { TvdbId = 100, ParseTerm = "amareto" });
+
+            Subject.FindTvdbId("Amareto", null, -1).Should().Be(101);
+        }
+
+        [Test]
+        public void should_add_custom_mapping()
+        {
+            Mocker.GetMock<ISceneMappingRepository>().Setup(c => c.All()).Returns(new List<SceneMapping>());
+
+            var mapping = Subject.AddCustomMapping(new SceneMapping { Title = " Amareto ", TvdbId = 100 });
+
+            mapping.Title.Should().Be("Amareto");
+            mapping.ParseTerm.Should().Be("amareto");
+            mapping.SearchTerm.Should().Be("Amareto");
+            mapping.Type.Should().Be(SceneMappingService.CustomMappingType);
+
+            Mocker.GetMock<ISceneMappingRepository>().Verify(c => c.Insert(mapping), Times.Once());
+            Mocker.GetMock<ISceneMappingRepository>().Verify(c => c.All(), Times.Exactly(2));
+        }
+
+        [Test]
+        public void should_not_add_custom_mapping_with_empty_title()
+        {
+            Assert.Throws<NzbDroneClientException>(() => Subject.AddCustomMapping(new SceneMapping { Title = " ", TvdbId = 100 }));
+
+            Mocker.GetMock<ISceneMappingRepository>().Verify(c => c.Insert(It.IsAny<SceneMapping>()), Times.Never());
+        }
+
+        [Test]
+        public void should_not_add_custom_mapping_used_by_another_series()
+        {
+            var mappings = new List<SceneMapping>
+            {
+                new SceneMapping { Title = "Amareto", ParseTerm = "amareto", SearchTerm = "Amareto", TvdbId = 101 }
+            };
+
+            Mocker.GetMock<ISceneMappingRepository>().Setup(c => c.All()).Returns(mappings);
+
+            Assert.Throws<NzbDroneClientException>(() => Subject.AddCustomMapping(new SceneMapping { Title = "Amareto", TvdbId = 100 }));
+
+            Mocker.GetMock<ISceneMappingRepository>().Verify(c => c.Insert(It.IsAny<SceneMapping>()), Times.Never());
+        }
+
+        [Test]
+        public void should_add_custom_mapping_used_by_another_series_if_excluded()
+        {
+            var mappings = new List<SceneMapping>
+            {
+                new SceneMapping { Title = "Amareto", ParseTerm = "amareto", SearchTerm = "Amareto", TvdbId = 101 }
+            };
+
+            Mocker.GetMock<ISceneMappingRepository>().Setup(c => c.All()).Returns(mappings);
+            GivenExclusions(new SceneMappingExclusion { TvdbId = 101, ParseTerm = "amareto" });
+
+            Subject.AddCustomMapping(new SceneMapping { Title = "Amareto", TvdbId = 100 });
+
+            Mocker.GetMock<ISceneMappingRepository>().Verify(c => c.Insert(It.IsAny<SceneMapping>()), Times.Once());
+        }
+
+        [Test]
+        public void should_not_add_custom_mapping_matching_another_series_title()
+        {
+            Mocker.GetMock<ISceneMappingRepository>().Setup(c => c.All()).Returns(new List<SceneMapping>());
+            Mocker.GetMock<ISeriesService>().Setup(c => c.FindByTitle("Amareto")).Returns(new Series { TvdbId = 101 });
+
+            Assert.Throws<NzbDroneClientException>(() => Subject.AddCustomMapping(new SceneMapping { Title = "Amareto", TvdbId = 100 }));
+
+            Mocker.GetMock<ISceneMappingRepository>().Verify(c => c.Insert(It.IsAny<SceneMapping>()), Times.Never());
+        }
+
+        [Test]
+        public void should_not_add_duplicate_custom_mapping()
+        {
+            var mappings = new List<SceneMapping>
+            {
+                new SceneMapping { Title = "Amareto", ParseTerm = "amareto", SearchTerm = "Amareto", TvdbId = 100, Type = SceneMappingService.CustomMappingType }
+            };
+
+            Mocker.GetMock<ISceneMappingRepository>().Setup(c => c.All()).Returns(mappings);
+
+            Assert.Throws<NzbDroneClientException>(() => Subject.AddCustomMapping(new SceneMapping { Title = "Amareto", TvdbId = 100 }));
+        }
+
+        [Test]
+        public void should_delete_custom_mapping()
+        {
+            Mocker.GetMock<ISceneMappingRepository>().Setup(c => c.Get(1)).Returns(new SceneMapping { Id = 1, Title = "Amareto", TvdbId = 100, Type = SceneMappingService.CustomMappingType });
+
+            Subject.DeleteCustomMapping(1);
+
+            Mocker.GetMock<ISceneMappingRepository>().Verify(c => c.Delete(1), Times.Once());
+        }
+
+        [Test]
+        public void should_not_delete_mapping_from_provider()
+        {
+            Mocker.GetMock<ISceneMappingRepository>().Setup(c => c.Get(1)).Returns(new SceneMapping { Id = 1, Title = "Amareto", TvdbId = 100, Type = "ServicesProvider" });
+
+            Assert.Throws<NzbDroneClientException>(() => Subject.DeleteCustomMapping(1));
+
+            Mocker.GetMock<ISceneMappingRepository>().Verify(c => c.Delete(It.IsAny<int>()), Times.Never());
+        }
+
+        [Test]
+        public void should_exclude_mapping()
+        {
+            GivenExclusions();
+
+            Subject.Exclude(100, "Amareto");
+
+            Mocker.GetMock<ISceneMappingExclusionRepository>().Verify(c => c.Insert(It.Is<SceneMappingExclusion>(e => e.TvdbId == 100 && e.ParseTerm == "amareto")), Times.Once());
+        }
+
+        [Test]
+        public void should_not_exclude_mapping_twice()
+        {
+            GivenExclusions(new SceneMappingExclusion { TvdbId = 100, ParseTerm = "amareto" });
+
+            Subject.Exclude(100, "Amareto");
+
+            Mocker.GetMock<ISceneMappingExclusionRepository>().Verify(c => c.Insert(It.IsAny<SceneMappingExclusion>()), Times.Never());
+        }
+
+        [Test]
+        public void should_remove_exclusion()
+        {
+            GivenExclusions(new SceneMappingExclusion { TvdbId = 100, ParseTerm = "amareto" });
+
+            Subject.RemoveExclusion(100, "Amareto");
+
+            Mocker.GetMock<ISceneMappingExclusionRepository>().Verify(c => c.DeleteMany(It.Is<List<SceneMappingExclusion>>(l => l.Count == 1)), Times.Once());
+        }
+
+        private void GivenExclusions(params SceneMappingExclusion[] exclusions)
+        {
+            Mocker.GetMock<ISceneMappingExclusionRepository>().Setup(c => c.All()).Returns(exclusions);
+            Mocker.GetMock<ISceneMappingExclusionRepository>().Setup(c => c.FindByTvdbId(It.IsAny<int>()))
+                  .Returns<int>(tvdbId => exclusions.Where(e => e.TvdbId == tvdbId).ToList());
         }
 
         private void AssertNoUpdate()
