@@ -62,8 +62,6 @@ namespace NzbDrone.Core.Tv
         public HashSet<int> Tags { get; set; }
         public AddSeriesOptions AddOptions { get; set; }
 
-        public bool IgnoreAlternateTitles { get; set; } = true;
-
         public override string ToString()
         {
             return string.Format("[{0}][{1}]", TvdbId, Title.NullSafe());
@@ -85,8 +83,6 @@ namespace NzbDrone.Core.Tv
             RootFolderPath = otherSeries.RootFolderPath;
             Tags = otherSeries.Tags;
             AddOptions = otherSeries.AddOptions;
-
-            IgnoreAlternateTitles = otherSeries.IgnoreAlternateTitles;
         }
     }
 }

@@ -172,11 +172,7 @@ namespace NzbDrone.Core.IndexerSearch
         {
             var dict = new Dictionary<SceneSeasonMapping, SceneSeasonMapping>();
 
-            var sceneMappings = new List<SceneMapping>();
-            if (!series.IgnoreAlternateTitles)
-            {
-                sceneMappings = _sceneMapping.FindByTvdbId(series.TvdbId);
-            }
+            var sceneMappings = _sceneMapping.FindByTvdbId(series.TvdbId);
 
             // Group the episode by SceneSeasonNumber/SeasonNumber, in 99% of cases this will result in 1 groupedEpisode
             var groupedEpisodes = episodes.ToLookup(v => ((v.SceneSeasonNumber ?? v.SeasonNumber) * 100000) + v.SeasonNumber);
@@ -221,11 +217,7 @@ namespace NzbDrone.Core.IndexerSearch
         {
             var dict = new Dictionary<SceneEpisodeMapping, SceneEpisodeMapping>();
 
-            var sceneMappings = new List<SceneMapping>();
-            if (!series.IgnoreAlternateTitles)
-            {
-            sceneMappings = _sceneMapping.FindByTvdbId(series.TvdbId);
-            }
+            var sceneMappings = _sceneMapping.FindByTvdbId(series.TvdbId);
 
             var episodeMappings = GetSceneEpisodeMappings(series, episode, sceneMappings);
 
@@ -495,13 +487,9 @@ namespace NzbDrone.Core.IndexerSearch
             var spec = new TSpec();
 
             spec.Series = series;
-            spec.SceneTitles = new List<string>();
-            if (!series.IgnoreAlternateTitles)
-            {
-                spec.SceneTitles = _sceneMapping.GetSceneNames(series.TvdbId,
-                                                               episodes.Select(e => e.SeasonNumber).Distinct().ToList(),
-                                                               episodes.Select(e => e.SceneSeasonNumber ?? e.SeasonNumber).Distinct().ToList());
-            }
+            spec.SceneTitles = _sceneMapping.GetSceneNames(series.TvdbId,
+                                                           episodes.Select(e => e.SeasonNumber).Distinct().ToList(),
+                                                           episodes.Select(e => e.SceneSeasonNumber ?? e.SeasonNumber).Distinct().ToList());
 
             spec.Episodes = episodes;
             spec.MonitoredEpisodesOnly = monitoredOnly;

@@ -11,7 +11,6 @@ interface NewSeriesPayload {
   qualityProfileId: number;
   seriesType: SeriesType;
   seasonFolder: boolean;
-  ignoreAlternateTitles: boolean;
   tags: number[];
   searchForMissingEpisodes?: boolean;
   searchForCutoffUnmetEpisodes?: boolean;
@@ -25,7 +24,6 @@ function getNewSeries(series: Series, payload: NewSeriesPayload) {
     qualityProfileId,
     seriesType,
     seasonFolder,
-	ignoreAlternateTitles,
     tags,
     searchForMissingEpisodes = false,
     searchForCutoffUnmetEpisodes = false,
@@ -44,7 +42,6 @@ function getNewSeries(series: Series, payload: NewSeriesPayload) {
   series.rootFolderPath = rootFolderPath;
   series.seriesType = seriesType;
   series.seasonFolder = seasonFolder;
-  series.ignoreAlternateTitles = ignoreAlternateTitles;
   series.tags = tags;
 
   return series;
