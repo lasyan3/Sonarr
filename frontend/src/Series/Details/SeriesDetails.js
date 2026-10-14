@@ -23,6 +23,7 @@ import Tooltip from 'Components/Tooltip/Tooltip';
 import { align, icons, kinds, sizes, sortDirections, tooltipPositions } from 'Helpers/Props';
 import InteractiveImportModal from 'InteractiveImport/InteractiveImportModal';
 import OrganizePreviewModalConnector from 'Organize/OrganizePreviewModalConnector';
+import EditAlternateTitlesModal from 'Series/AlternateTitles/EditAlternateTitlesModal';
 import DeleteSeriesModal from 'Series/Delete/DeleteSeriesModal';
 import EditSeriesModal from 'Series/Edit/EditSeriesModal';
 import SeriesHistoryModal from 'Series/History/SeriesHistoryModal';
@@ -78,6 +79,7 @@ class SeriesDetails extends Component {
       isDeleteSeriesModalOpen: false,
       isSeriesHistoryModalOpen: false,
       isMonitorOptionsModalOpen: false,
+      isAlternateTitlesModalOpen: false,
       allExpanded: false,
       allCollapsed: false,
       expandedState: {},
@@ -137,6 +139,14 @@ class SeriesDetails extends Component {
 
   onMonitorOptionsClose = () => {
     this.setState({ isMonitorOptionsModalOpen: false });
+  };
+
+  onAlternateTitlesPress = () => {
+    this.setState({ isAlternateTitlesModalOpen: true });
+  };
+
+  onAlternateTitlesModalClose = () => {
+    this.setState({ isAlternateTitlesModalOpen: false });
   };
 
   onExpandAllPress = () => {
@@ -223,6 +233,7 @@ class SeriesDetails extends Component {
       isDeleteSeriesModalOpen,
       isSeriesHistoryModalOpen,
       isMonitorOptionsModalOpen,
+      isAlternateTitlesModalOpen,
       allExpanded,
       allCollapsed,
       expandedState,
@@ -300,6 +311,12 @@ class SeriesDetails extends Component {
               label={translate('SeriesMonitoring')}
               iconName={icons.MONITORED}
               onPress={this.onMonitorOptionsPress}
+            />
+
+            <PageToolbarButton
+              label={translate('AlternateTitles')}
+              iconName={icons.ALTERNATE_TITLES}
+              onPress={this.onAlternateTitlesPress}
             />
 
             <PageToolbarButton
@@ -726,6 +743,13 @@ class SeriesDetails extends Component {
             isOpen={isMonitorOptionsModalOpen}
             seriesId={id}
             onModalClose={this.onMonitorOptionsClose}
+          />
+
+          <EditAlternateTitlesModal
+            isOpen={isAlternateTitlesModalOpen}
+            seriesId={id}
+            seriesTitle={title}
+            onModalClose={this.onAlternateTitlesModalClose}
           />
         </PageContentBody>
       </PageContent>

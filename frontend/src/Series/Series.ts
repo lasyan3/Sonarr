@@ -50,12 +50,17 @@ export interface Ratings {
   value: number;
 }
 
+export type AlternateTitleSource = 'unknown' | 'services' | 'xem' | 'custom';
+
 export interface AlternateTitle {
+  id: number;
   seasonNumber: number;
   sceneSeasonNumber?: number;
   title: string;
   sceneOrigin: 'unknown' | 'unknown:tvdb' | 'mixed' | 'tvdb';
   comment?: string;
+  source: AlternateTitleSource;
+  isExcluded: boolean;
 }
 
 export interface SeriesAddOptions {
