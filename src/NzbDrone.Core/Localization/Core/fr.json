@@ -809,7 +809,7 @@
   "UseSeasonFolder": "Utiliser le dossier de la saison",
   "UseSeasonFolderHelpText": "Trier les épisodes dans les dossiers des saisons",
   "IgnoreAlternateTitles": "Ignorer les titres alternatifs",
-  "IgnoreAlternateTitlesHelpText": "La recherche ne tient pas compte des titres alternatifs",
+  "IgnoreAlternateTitlesHelpText": "La recherche et l'analyse des releases ne tiennent pas compte des titres alternatifs",
   "Usenet": "Usenet",
   "UsenetDisabled": "Usenet Désactivé",
   "UtcAirDate": "Date de diffusion UTC",

@@ -8,6 +8,7 @@ using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Parser;
+using NzbDrone.Core.Tv;
 using NzbDrone.Core.Tv.Events;
 
 namespace NzbDrone.Core.DataAugmentation.Scene
@@ -25,29 +26,37 @@ namespace NzbDrone.Core.DataAugmentation.Scene
                                        IHandle<SeriesRefreshStartingEvent>,
                                        IHandle<SeriesAddedEvent>,
                                        IHandle<SeriesImportedEvent>,
+                                       IHandle<SeriesEditedEvent>,
+                                       IHandle<SeriesBulkEditedEvent>,
+                                       IHandle<SeriesDeletedEvent>,
                                        IExecute<UpdateSceneMappingCommand>
     {
         private readonly ISceneMappingRepository _repository;
         private readonly IEnumerable<ISceneMappingProvider> _sceneMappingProviders;
+        private readonly ISeriesService _seriesService;
         private readonly IEventAggregator _eventAggregator;
         private readonly Logger _logger;
         private readonly ICachedDictionary<List<SceneMapping>> _getTvdbIdCache;
         private readonly ICachedDictionary<List<SceneMapping>> _findByTvdbIdCache;
+        private readonly ICached<HashSet<int>> _ignoreAlternateTitlesCache;
         private bool _updatedAfterStartup;
 
         public SceneMappingService(ISceneMappingRepository repository,
                                    ICacheManager cacheManager,
                                    IEnumerable<ISceneMappingProvider> sceneMappingProviders,
+                                   ISeriesService seriesService,
                                    IEventAggregator eventAggregator,
                                    Logger logger)
         {
             _repository = repository;
             _sceneMappingProviders = sceneMappingProviders;
+            _seriesService = seriesService;
             _eventAggregator = eventAggregator;
             _logger = logger;
 
             _getTvdbIdCache = cacheManager.GetCacheDictionary<List<SceneMapping>>(GetType(), "tvdb_id");
             _findByTvdbIdCache = cacheManager.GetCacheDictionary<List<SceneMapping>>(GetType(), "find_tvdb_id");
+            _ignoreAlternateTitlesCache = cacheManager.GetCache<HashSet<int>>(GetType(), "ignore_alternate_titles");
         }
 
         public List<string> GetSceneNames(int tvdbId, List<int> seasonNumbers, List<int> sceneSeasonNumbers)
@@ -196,6 +205,7 @@ namespace NzbDrone.Core.DataAugmentation.Scene
                 return null;
             }
 
+            candidates = FilterIgnoredAlternateTitles(candidates);
             candidates = FilterSceneMappings(candidates, releaseTitle);
 
             if (candidates.Count <= 1)
@@ -225,6 +235,18 @@ namespace NzbDrone.Core.DataAugmentation.Scene
 
             _getTvdbIdCache.Update(mappings.GroupBy(v => v.ParseTerm).ToDictionary(v => v.Key, v => v.ToList()));
             _findByTvdbIdCache.Update(mappings.GroupBy(v => v.TvdbId).ToDictionary(v => v.Key.ToString(), v => v.ToList()));
+        }
+
+        private List<SceneMapping> FilterIgnoredAlternateTitles(List<SceneMapping> candidates)
+        {
+            var ignoredTvdbIds = _ignoreAlternateTitlesCache.Get("all", () => _seriesService.AllSeriesTvdbIdsIgnoringAlternateTitles().ToHashSet());
+
+            if (ignoredTvdbIds.Count == 0)
+            {
+                return candidates;
+            }
+
+            return candidates.Where(v => !ignoredTvdbIds.Contains(v.TvdbId)).ToList();
         }
 
         private List<SceneMapping> FilterSceneMappings(List<SceneMapping> candidates, string releaseTitle)
@@ -289,6 +311,8 @@ namespace NzbDrone.Core.DataAugmentation.Scene
 
         public void Handle(SeriesAddedEvent message)
         {
+            _ignoreAlternateTitlesCache.Clear();
+
             if (!_updatedAfterStartup)
             {
                 UpdateMappings();
@@ -297,10 +321,27 @@ namespace NzbDrone.Core.DataAugmentation.Scene
 
         public void Handle(SeriesImportedEvent message)
         {
+            _ignoreAlternateTitlesCache.Clear();
+
             if (!_updatedAfterStartup)
             {
                 UpdateMappings();
             }
+        }
+
+        public void Handle(SeriesEditedEvent message)
+        {
+            _ignoreAlternateTitlesCache.Clear();
+        }
+
+        public void Handle(SeriesBulkEditedEvent message)
+        {
+            _ignoreAlternateTitlesCache.Clear();
+        }
+
+        public void Handle(SeriesDeletedEvent message)
+        {
+            _ignoreAlternateTitlesCache.Clear();
         }
 
         public void Execute(UpdateSceneMappingCommand message)

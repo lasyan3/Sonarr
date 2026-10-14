@@ -40,7 +40,7 @@ function createMapStateToProps() {
         'monitored',
         'monitorNewItems',
         'seasonFolder',
-		'ignoreAlternateTitles',
+        'ignoreAlternateTitles',
         'qualityProfileId',
         'seriesType',
         'path',

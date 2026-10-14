@@ -25,7 +25,7 @@ function getNewSeries(series: Series, payload: NewSeriesPayload) {
     qualityProfileId,
     seriesType,
     seasonFolder,
-	ignoreAlternateTitles,
+    ignoreAlternateTitles,
     tags,
     searchForMissingEpisodes = false,
     searchForCutoffUnmetEpisodes = false,

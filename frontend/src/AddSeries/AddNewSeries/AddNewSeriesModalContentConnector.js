@@ -60,7 +60,7 @@ class AddNewSeriesModalContentConnector extends Component {
       monitor,
       qualityProfileId,
       seasonFolder,
-	  ignoreAlternateTitles,
+      ignoreAlternateTitles,
       searchForMissingEpisodes,
       searchForCutoffUnmetEpisodes,
       tags
@@ -73,7 +73,7 @@ class AddNewSeriesModalContentConnector extends Component {
       qualityProfileId: qualityProfileId.value,
       seriesType,
       seasonFolder: seasonFolder.value,
-	  ignoreAlternateTitles: ignoreAlternateTitles.value,
+      ignoreAlternateTitles: ignoreAlternateTitles.value,
       searchForMissingEpisodes: searchForMissingEpisodes.value,
       searchForCutoffUnmetEpisodes: searchForCutoffUnmetEpisodes.value,
       tags: tags.value

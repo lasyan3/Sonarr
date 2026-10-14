@@ -25,6 +25,7 @@ namespace NzbDrone.Core.Tv
         void DeleteSeries(List<int> seriesIds, bool deleteFiles, bool addImportListExclusion);
         List<Series> GetAllSeries();
         List<int> AllSeriesTvdbIds();
+        List<int> AllSeriesTvdbIdsIgnoringAlternateTitles();
         Dictionary<int, string> GetAllSeriesPaths();
         Dictionary<int, List<int>> GetAllSeriesTags();
         List<Series> AllForTag(int tagId);
@@ -174,6 +175,11 @@ namespace NzbDrone.Core.Tv
         public List<int> AllSeriesTvdbIds()
         {
             return _seriesRepository.AllSeriesTvdbIds().ToList();
+        }
+
+        public List<int> AllSeriesTvdbIdsIgnoringAlternateTitles()
+        {
+            return _seriesRepository.AllSeriesTvdbIdsIgnoringAlternateTitles();
         }
 
         public Dictionary<int, string> GetAllSeriesPaths()

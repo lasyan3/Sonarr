@@ -73,7 +73,7 @@ class AddNewSeriesModalContent extends Component {
       qualityProfileId,
       seriesType,
       seasonFolder,
-	  ignoreAlternateTitles,
+      ignoreAlternateTitles,
       searchForMissingEpisodes,
       searchForCutoffUnmetEpisodes,
       folder,

@@ -164,7 +164,7 @@ function EditSeriesModalContent(props: EditSeriesModalContentProps) {
       qualityProfileId,
       seriesType,
       seasonFolder,
-	  ignoreAlternateTitles,
+      ignoreAlternateTitles,
       rootFolderPath,
       onSavePress,
       onModalClose,

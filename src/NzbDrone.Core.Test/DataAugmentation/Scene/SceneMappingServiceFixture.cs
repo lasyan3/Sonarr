@@ -8,6 +8,8 @@ using NUnit.Framework;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.DataAugmentation.Scene;
 using NzbDrone.Core.Test.Framework;
+using NzbDrone.Core.Tv;
+using NzbDrone.Core.Tv.Events;
 using NzbDrone.Test.Common;
 
 namespace NzbDrone.Core.Test.DataAugmentation.Scene
@@ -46,6 +48,10 @@ namespace NzbDrone.Core.Test.DataAugmentation.Scene
 
             _provider2 = new Mock<ISceneMappingProvider>();
             _provider2.Setup(s => s.GetSceneMappings()).Returns(_fakeMappings);
+
+            Mocker.GetMock<ISeriesService>()
+                  .Setup(s => s.AllSeriesTvdbIdsIgnoringAlternateTitles())
+                  .Returns(new List<int>());
         }
 
         private void GivenProviders(IEnumerable<Mock<ISceneMappingProvider>> providers)
@@ -198,6 +204,51 @@ namespace NzbDrone.Core.Test.DataAugmentation.Scene
 
             tvdbId.Should().Be(100);
             seasonNumber.Should().Be(expectedSeasonNumber);
+        }
+
+        [Test]
+        public void should_not_return_mapping_for_series_ignoring_alternate_titles()
+        {
+            var mappings = new List<SceneMapping>
+            {
+                new SceneMapping { Title = "Working!!", ParseTerm = "working", SearchTerm = "Working!!", TvdbId = 100, SceneSeasonNumber = 1 },
+            };
+
+            Mocker.GetMock<ISceneMappingRepository>().Setup(c => c.All()).Returns(mappings);
+
+            Mocker.GetMock<ISeriesService>()
+                  .Setup(s => s.AllSeriesTvdbIdsIgnoringAlternateTitles())
+                  .Returns(new List<int> { 100 });
+
+            Subject.FindTvdbId("Working!!", null, -1).Should().BeNull();
+            Subject.FindSceneMapping("Working!!", null, -1).Should().BeNull();
+            Subject.GetSceneSeasonNumber("Working!!", null).Should().BeNull();
+        }
+
+        [Test]
+        public void should_return_mapping_after_series_stops_ignoring_alternate_titles()
+        {
+            var mappings = new List<SceneMapping>
+            {
+                new SceneMapping { Title = "Working!!", ParseTerm = "working", SearchTerm = "Working!!", TvdbId = 100, SceneSeasonNumber = 1 },
+            };
+
+            Mocker.GetMock<ISceneMappingRepository>().Setup(c => c.All()).Returns(mappings);
+
+            Mocker.GetMock<ISeriesService>()
+                  .Setup(s => s.AllSeriesTvdbIdsIgnoringAlternateTitles())
+                  .Returns(new List<int> { 100 });
+
+            Subject.FindTvdbId("Working!!", null, -1).Should().BeNull();
+
+            Mocker.GetMock<ISeriesService>()
+                  .Setup(s => s.AllSeriesTvdbIdsIgnoringAlternateTitles())
+                  .Returns(new List<int>());
+
+            var series = new Series { TvdbId = 100 };
+            Subject.Handle(new SeriesEditedEvent(series, series));
+
+            Subject.FindTvdbId("Working!!", null, -1).Should().Be(100);
         }
 
         [Test]
