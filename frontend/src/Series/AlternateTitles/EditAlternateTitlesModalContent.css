@@ -1,0 +1,24 @@
+.addForm {
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.titleInput {
+  flex: 1 1 auto;
+}
+
+.seasonNumberInput {
+  flex: 0 0 200px;
+}
+
+@media only screen and (max-width: $breakpointSmall) {
+  .addForm {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .seasonNumberInput {
+    flex: 1 1 auto;
+  }
+}

@@ -2131,5 +2131,17 @@
     "FolderNameTokens": "Jetons de nom de dossier",
     "ManageCustomFormats": "Gérer les formats personnalisés",
   "Menu": "Menu",
-  "SylAddons": "Ajouts de lasyan3"
+  "SylAddons": "Ajouts de lasyan3",
+  "AddAlternateTitle": "Ajouter un titre alternatif",
+  "AddAlternateTitleHelpText": "Titre utilisé pour rechercher et identifier les releases de cette série",
+  "AlternateTitleSeasonNumberHelpText": "Laisser vide pour utiliser le titre pour toutes les saisons",
+  "AlternateTitleSourceCustom": "Personnalisé",
+  "AlternateTitlesLoadError": "Impossible de charger les titres alternatifs",
+  "AlternateTitlesSaveError": "Impossible d'enregistrer les titres alternatifs",
+  "DeleteAlternateTitle": "Supprimer le titre alternatif",
+  "EditAlternateTitlesInfo": "Les titres masqués ne sont plus utilisés pour la recherche ni pour l'identification des releases. Les titres personnalisés sont conservés lors des mises à jour des titres alternatifs depuis Sonarr et TheXEM.",
+  "EditAlternateTitlesModalHeader": "Titres alternatifs - {title}",
+  "HideAlternateTitle": "Masquer ce titre alternatif",
+  "NoAlternateTitles": "Aucun titre alternatif",
+  "ShowAlternateTitle": "Réutiliser ce titre alternatif"
 }
