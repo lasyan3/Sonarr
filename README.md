@@ -13,6 +13,7 @@ This fork follows the official Sonarr releases and adds a few changes on top of 
 
 ### Addons
 
+- **Alternate titles**: add, hide or restore the alternate titles of a series, which are used to search and identify releases.
 - **Anime episode search**: also searches the absolute episode number prefixed with `E` (e.g. `One Piece E1152`), a naming used by some indexers.
 - **Anime season search**: only searches individual episodes when the season has not fully aired.
 - **Anime season search**: when there are no results and the anime has a single season, searches again without the season number (e.g. `Gungrave`).
