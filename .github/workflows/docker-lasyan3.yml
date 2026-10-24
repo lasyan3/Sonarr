@@ -125,9 +125,10 @@ jobs:
             BRANCH=${{ steps.version.outputs.branch }}
             VERSION=${{ steps.version.outputs.version }}
             BUILD_DATE=${{ steps.version.outputs.build_date }}
-          # Couches (apt/node, image de base...) réutilisées d'un run à l'autre
+          # Couches (apt/node, image de base...) réutilisées d'un run à l'autre.
+          # Un échec d'écriture du cache (ex. "failed to reserve cache") ne fait pas échouer le build.
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-to: type=gha,mode=max,ignore-error=true
 
   deploy:
     needs: build
