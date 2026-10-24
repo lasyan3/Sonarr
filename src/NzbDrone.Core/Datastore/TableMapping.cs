@@ -110,6 +110,7 @@ namespace NzbDrone.Core.Datastore
                   .Ignore(d => d.Protocol);
 
             Mapper.Entity<SceneMapping>("SceneMappings").RegisterModel();
+            Mapper.Entity<SceneMappingExclusion>("SceneMappingExclusions").RegisterModel();
 
             Mapper.Entity<EpisodeHistory>("History").RegisterModel();
 

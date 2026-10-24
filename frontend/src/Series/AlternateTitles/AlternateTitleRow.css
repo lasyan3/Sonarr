@@ -1,0 +1,13 @@
+.title {
+  white-space: nowrap;
+}
+
+.excluded {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
+.comment {
+  color: var(--darkGray);
+  font-size: $smallFontSize;
+}

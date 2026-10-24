@@ -2132,9 +2132,22 @@
     "ManageCustomFormats": "Gérer les formats personnalisés",
   "Menu": "Menu",
   "SylAddons": "Ajouts de lasyan3",
+  "SylAddonAlternateTitlesEdit": "Titres alternatifs : ajouter, masquer ou réutiliser les titres alternatifs d'une série utilisés pour rechercher et identifier les releases",
   "SylAddonAnimeEpisodeSearchAbsoluteWithE": "Recherche d'épisode anime : recherche aussi le numéro absolu précédé de E (One Piece E1152)",
   "SylAddonAnimeSeasonSearchEpisodesIfNotAired": "Recherche de saison anime : ne recherche les épisodes un par un que si la saison n'est pas entièrement diffusée",
   "SylAddonAnimeSeasonSearchWithoutSeasonNumber": "Recherche de saison anime : sans résultat et avec une seule saison, recherche sans numéro de saison (Gungrave)",
   "SylAddonManualImportIgnoreLinks": "Import manuel : ignore les liens symboliques",
-  "SylAddonSeasonSearchEpisodesIfNotAired": "Recherche de saison : si la saison n'est pas entièrement diffusée, recherche les épisodes un par un"
+  "SylAddonSeasonSearchEpisodesIfNotAired": "Recherche de saison : si la saison n'est pas entièrement diffusée, recherche les épisodes un par un",
+  "AddAlternateTitle": "Ajouter un titre alternatif",
+  "AddAlternateTitleHelpText": "Titre utilisé pour rechercher et identifier les releases de cette série",
+  "AlternateTitleSeasonNumberHelpText": "Laisser vide pour utiliser le titre pour toutes les saisons",
+  "AlternateTitleSourceCustom": "Personnalisé",
+  "AlternateTitlesLoadError": "Impossible de charger les titres alternatifs",
+  "AlternateTitlesSaveError": "Impossible d'enregistrer les titres alternatifs",
+  "DeleteAlternateTitle": "Supprimer le titre alternatif",
+  "EditAlternateTitlesInfo": "Les titres masqués ne sont plus utilisés pour la recherche ni pour l'identification des releases. Les titres personnalisés sont conservés lors des mises à jour des titres alternatifs depuis Sonarr et TheXEM.",
+  "EditAlternateTitlesModalHeader": "Titres alternatifs - {title}",
+  "HideAlternateTitle": "Masquer ce titre alternatif",
+  "NoAlternateTitles": "Aucun titre alternatif",
+  "ShowAlternateTitle": "Réutiliser ce titre alternatif"
 }
