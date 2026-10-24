@@ -3,11 +3,11 @@ name: Docker (lasyan3)
 on:
   push:
     branches:
-      - docker
+      - develop
   # Build seul (sans push ni déploiement) pour valider une PR avant de la merger
   pull_request:
     branches:
-      - docker
+      - develop
   workflow_dispatch:
     inputs:
       deploy:
