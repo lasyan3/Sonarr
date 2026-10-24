@@ -1,0 +1,9 @@
+# Allège le contexte envoyé à BuildKit (surtout en local)
+**/.git
+Sonarr/node_modules
+Sonarr/_output
+Sonarr/_artifacts
+Sonarr/_temp
+Sonarr/_tests
+Sonarr/src/**/bin
+Sonarr/src/**/obj

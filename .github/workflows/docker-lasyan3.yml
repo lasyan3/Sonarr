@@ -1,0 +1,140 @@
+name: Docker (lasyan3)
+
+on:
+  push:
+    branches:
+      - docker
+  # Build seul (sans push ni déploiement) pour valider une PR avant de la merger
+  pull_request:
+    branches:
+      - docker
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: "Mettre à jour le conteneur sur Unraid"
+        type: boolean
+        default: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  IMAGE: ghcr.io/lasyan3/sonarr
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Check out Sonarr
+        uses: actions/checkout@v5
+        with:
+          path: Sonarr
+
+      - name: Check out linuxserver/docker-sonarr
+        uses: actions/checkout@v5
+        with:
+          repository: linuxserver/docker-sonarr
+          ref: master
+          path: docker-sonarr
+          sparse-checkout: root
+
+      - name: Compute version
+        id: version
+        run: |
+          # Suit la version upstream déclarée dans build.yml (ex. 4.0.20)
+          BASE=$(sed -n 's/^  VERSION: *//p' Sonarr/.github/workflows/build.yml | head -1)
+          echo "version=${BASE}.${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+          echo "build_date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        if: github.event_name != 'pull_request'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=raw,value=latest
+            type=raw,value=${{ steps.version.outputs.version }}
+            type=sha
+
+      # Persiste les cache mounts NuGet / yarn du Dockerfile entre les runs
+      - name: Cache NuGet / yarn
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            nuget-cache
+            yarn-cache
+          key: buildkit-mounts-${{ hashFiles('Sonarr/yarn.lock', 'Sonarr/src/**/*.csproj', 'Sonarr/src/Directory.*.props') }}
+          restore-keys: buildkit-mounts-
+
+      - uses: reproducible-containers/buildkit-cache-dance@v3
+        with:
+          cache-map: |
+            {
+              "nuget-cache": "/root/.nuget/packages",
+              "yarn-cache": "/usr/local/share/.cache/yarn"
+            }
+          skip-extraction: ${{ steps.cache.outputs.cache-hit }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Sonarr/.github/docker/Dockerfile
+          platforms: linux/amd64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            SONARR_VERSION=${{ steps.version.outputs.version }}
+            BRANCH=${{ github.ref_name }}
+            VERSION=${{ steps.version.outputs.version }}
+            BUILD_DATE=${{ steps.version.outputs.build_date }}
+          # Couches (apt/node, image de base...) réutilisées d'un run à l'autre
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build
+    if: github.event_name == 'push' || inputs.deploy
+    runs-on: [self-hosted, unraid]
+    permissions:
+      packages: read
+    env:
+      CONTAINER: ${{ vars.UNRAID_CONTAINER || 'sonarr' }}
+    steps:
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull image
+        run: docker pull "$IMAGE:latest"
+
+      # Recrée le conteneur avec sa config actuelle (ports, volumes, labels Unraid)
+      # sur la nouvelle image, comme le "Force update" d'Unraid
+      - name: Recreate container
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            nickfedor/watchtower:latest \
+            --run-once --no-pull --cleanup "$CONTAINER"
+
+      - name: Check
+        run: |
+          docker inspect -f '{{.Config.Image}} {{.State.Status}} {{.Created}}' "$CONTAINER"
+          echo "Déployé : ${{ needs.build.outputs.version }}"
