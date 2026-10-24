@@ -59,16 +59,17 @@ function About() {
           />
         )}
 
-        {sylAddons ? (
-			<DescriptionList className={styles.descriptionList}>
-				{sylAddons.map((addon, index) => {
-					if (index == 0) {
-						return <DescriptionListItem title={translate('SylAddons')} data={addon} />;
-					} else {
-						return <DescriptionListItem data={addon} />;
-					}
-				})}
-			</DescriptionList>
+        {sylAddons?.length ? (
+          <DescriptionListItem
+            title={translate('SylAddons')}
+            data={
+              <ul className={styles.addons}>
+                {sylAddons.map((addon) => (
+                  <li key={addon}>{translate(addon)}</li>
+                ))}
+              </ul>
+            }
+          />
         ) : null}
 
         {isNetCore ? (

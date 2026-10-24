@@ -54,14 +54,14 @@ namespace NzbDrone.Common.EnvironmentInfo
             }
         }
 
+        // Translation keys of lasyan3's addons, keep them sorted to limit merge conflicts between branches
         public static IReadOnlyCollection<string> Addons { get; } = new List<string>()
         {
-            "Global Searching: add option to ignore alternate titles",
-            "Season Searching: if season not fully aired, search individual episodes",
-            "Anime Episode Search: add search using absolute episode with E (One Piece E1152)",
-            "Anime Season Search: if no results found and anime has only 1 season, search without season number (GunGrave)",
-            "Anime Season Search: do not search individual episodes unless the season is not fully aired",
-            "Manual import: ignore files which are links"
+            "SylAddonAnimeEpisodeSearchAbsoluteWithE",
+            "SylAddonAnimeSeasonSearchEpisodesIfNotAired",
+            "SylAddonAnimeSeasonSearchWithoutSeasonNumber",
+            "SylAddonManualImportIgnoreLinks",
+            "SylAddonSeasonSearchEpisodesIfNotAired",
         };
     }
 }

@@ -2131,5 +2131,10 @@
     "FolderNameTokens": "Jetons de nom de dossier",
     "ManageCustomFormats": "Gérer les formats personnalisés",
   "Menu": "Menu",
-  "SylAddons": "Ajouts de lasyan3"
+  "SylAddons": "Ajouts de lasyan3",
+  "SylAddonAnimeEpisodeSearchAbsoluteWithE": "Recherche d'épisode anime : recherche aussi le numéro absolu précédé de E (One Piece E1152)",
+  "SylAddonAnimeSeasonSearchEpisodesIfNotAired": "Recherche de saison anime : ne recherche les épisodes un par un que si la saison n'est pas entièrement diffusée",
+  "SylAddonAnimeSeasonSearchWithoutSeasonNumber": "Recherche de saison anime : sans résultat et avec une seule saison, recherche sans numéro de saison (Gungrave)",
+  "SylAddonManualImportIgnoreLinks": "Import manuel : ignore les liens symboliques",
+  "SylAddonSeasonSearchEpisodesIfNotAired": "Recherche de saison : si la saison n'est pas entièrement diffusée, recherche les épisodes un par un"
 }
