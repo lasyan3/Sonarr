@@ -7,6 +7,28 @@
 
 Sonarr is a PVR for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new episodes of your favorite shows and will grab, sort and rename them. It can also be configured to automatically upgrade the quality of files already downloaded when a better quality format becomes available.
 
+## lasyan3's fork
+
+This fork follows the official Sonarr releases and adds a few changes on top of them. They are also listed in the app under System → Status → About ("lasyan3's addons").
+
+### Addons
+
+- **Anime episode search**: also searches the absolute episode number prefixed with `E` (e.g. `One Piece E1152`), a naming used by some indexers.
+- **Anime season search**: only searches individual episodes when the season has not fully aired.
+- **Anime season search**: when there are no results and the anime has a single season, searches again without the season number (e.g. `Gungrave`).
+- **Season search**: when the season has not fully aired, searches individual episodes instead of a season pack.
+- **Manual import**: ignores symbolic links.
+
+### Docker image
+
+The `Docker (lasyan3)` workflow builds an image based on [linuxserver/docker-sonarr](https://github.com/linuxserver/docker-sonarr) and publishes it as `ghcr.io/lasyan3/sonarr`:
+
+- a pull request to `develop` is built to validate it, nothing is published;
+- a merged pull request is built, published (`latest` and `<official version>-lasyan3.<run>`) and deployed to Unraid;
+- direct pushes to `develop` do not trigger anything.
+
+The app reports the official version it is based on (e.g. `4.0.20.3014`), so Sonarr still detects new official releases.
+
 ## Getting Started
 
 - [Download/Installation](https://sonarr.tv/#downloads-v3)
