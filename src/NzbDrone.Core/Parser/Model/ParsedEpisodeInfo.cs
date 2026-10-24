@@ -14,6 +14,7 @@ namespace NzbDrone.Core.Parser.Model
         public SeriesTitleInfo SeriesTitleInfo { get; set; }
         public QualityModel Quality { get; set; }
         public int SeasonNumber { get; set; }
+        public int[] SeasonNumbers { get; set; }
         public int[] EpisodeNumbers { get; set; }
         public int[] AbsoluteEpisodeNumbers { get; set; }
         public decimal[] SpecialAbsoluteEpisodeNumbers { get; set; }
@@ -22,6 +23,7 @@ namespace NzbDrone.Core.Parser.Model
         public bool FullSeason { get; set; }
         public bool IsPartialSeason { get; set; }
         public bool IsMultiSeason { get; set; }
+        public bool IsCompleteSeries { get; set; }
         public bool IsSeasonExtra { get; set; }
         public bool IsSplitEpisode { get; set; }
         public bool IsMiniSeries { get; set; }
@@ -34,6 +36,7 @@ namespace NzbDrone.Core.Parser.Model
 
         public ParsedEpisodeInfo()
         {
+            SeasonNumbers = Array.Empty<int>();
             EpisodeNumbers = Array.Empty<int>();
             AbsoluteEpisodeNumbers = Array.Empty<int>();
             SpecialAbsoluteEpisodeNumbers = Array.Empty<decimal>();
@@ -121,6 +124,14 @@ namespace NzbDrone.Core.Parser.Model
             if (IsDaily && EpisodeNumbers.Empty())
             {
                 episodeString = string.Format("{0}", AirDate);
+            }
+            else if (IsCompleteSeries)
+            {
+                episodeString = "Complete Series";
+            }
+            else if (FullSeason && IsMultiSeason && SeasonNumbers.Any())
+            {
+                episodeString = string.Format("Seasons {0:00}-{1:00}", SeasonNumbers.First(), SeasonNumbers.Last());
             }
             else if (FullSeason)
             {

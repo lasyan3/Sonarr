@@ -221,6 +221,22 @@ namespace NzbDrone.Core.Parser
 
         private List<Episode> GetEpisodes(ParsedEpisodeInfo parsedEpisodeInfo, Series series, int mappedSeasonNumber, bool sceneSource, SearchCriteriaBase searchCriteria)
         {
+            if (parsedEpisodeInfo.IsCompleteSeries)
+            {
+                return _episodeService.GetEpisodeBySeries(series.Id)
+                                      .Where(e => e.SeasonNumber > 0)
+                                      .ToList();
+            }
+
+            if (parsedEpisodeInfo.FullSeason && parsedEpisodeInfo.IsMultiSeason && parsedEpisodeInfo.SeasonNumbers.Any())
+            {
+                var seasonOffset = mappedSeasonNumber - parsedEpisodeInfo.SeasonNumber;
+
+                return parsedEpisodeInfo.SeasonNumbers
+                                        .SelectMany(s => _episodeService.GetEpisodesBySeason(series.Id, s + seasonOffset))
+                                        .ToList();
+            }
+
             if (parsedEpisodeInfo.FullSeason)
             {
                 if (series.UseSceneNumbering && sceneSource)

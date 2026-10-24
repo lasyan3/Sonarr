@@ -6,6 +6,7 @@ using FluentAssertions;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Core.DecisionEngine.Specifications;
+using NzbDrone.Core.IndexerSearch.Definitions;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.Test.Framework;
 using NzbDrone.Core.Tv;
@@ -55,6 +56,38 @@ namespace NzbDrone.Core.Test.DecisionEngineTests
         public void should_return_false_if_is_a_multi_season_release()
         {
             Subject.IsSatisfiedBy(_remoteEpisode, null).Accepted.Should().BeFalse();
+        }
+
+        [Test]
+        public void should_return_false_if_is_a_complete_series_release()
+        {
+            _remoteEpisode.ParsedEpisodeInfo.IsMultiSeason = false;
+            _remoteEpisode.ParsedEpisodeInfo.IsCompleteSeries = true;
+
+            Subject.IsSatisfiedBy(_remoteEpisode, new SeasonSearchCriteria()).Accepted.Should().BeFalse();
+        }
+
+        [Test]
+        public void should_return_true_if_is_a_multi_season_release_during_complete_series_search()
+        {
+            Subject.IsSatisfiedBy(_remoteEpisode, new CompleteSeriesSearchCriteria()).Accepted.Should().BeTrue();
+        }
+
+        [Test]
+        public void should_return_true_if_is_a_complete_series_release_during_complete_series_search()
+        {
+            _remoteEpisode.ParsedEpisodeInfo.IsMultiSeason = false;
+            _remoteEpisode.ParsedEpisodeInfo.IsCompleteSeries = true;
+
+            Subject.IsSatisfiedBy(_remoteEpisode, new CompleteSeriesSearchCriteria()).Accepted.Should().BeTrue();
+        }
+
+        [Test]
+        public void should_return_false_if_is_a_season_pack_during_complete_series_search()
+        {
+            _remoteEpisode.ParsedEpisodeInfo.IsMultiSeason = false;
+
+            Subject.IsSatisfiedBy(_remoteEpisode, new CompleteSeriesSearchCriteria()).Accepted.Should().BeFalse();
         }
     }
 }

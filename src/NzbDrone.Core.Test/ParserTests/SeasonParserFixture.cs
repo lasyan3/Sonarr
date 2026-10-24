@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using NUnit.Framework;
 using NzbDrone.Core.Test.Framework;
 
@@ -110,6 +110,43 @@ namespace NzbDrone.Core.Test.ParserTests
             result.FullSeason.Should().BeTrue();
             result.IsPartialSeason.Should().BeFalse();
             result.IsMultiSeason.Should().BeTrue();
+        }
+
+        [TestCase("Series.Title.S01-S09.1080p.AMZN.WEB-DL.DDP2.0.H.264-NTb", new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 })]
+        [TestCase("Series Title Season 01 - Season 03 BluRay 1080p x264 REPACK -SacReD", new[] { 1, 2, 3 })]
+        [TestCase("Series Title S01 04 (1080p BluRay x265 HEVC 10bit AAC 5.1 Vyndros)", new[] { 1, 2, 3, 4 })]
+        public void should_parse_all_seasons_of_multi_season_release(string postTitle, int[] seasons)
+        {
+            var result = Parser.Parser.ParseTitle(postTitle);
+            result.SeasonNumbers.Should().Equal(seasons);
+            result.IsCompleteSeries.Should().BeFalse();
+        }
+
+        [TestCase("Series.Title.INTEGRALE.FRENCH.1080p.WEB.H264-GRP", "Series Title")]
+        [TestCase("Series Title Intégrale MULTi 1080p BluRay x264-GRP", "Series Title")]
+        [TestCase("Series.Title.2005.INTEGRAL.MULTi.1080p.BluRay.x264-GRP", "Series Title 2005")]
+        [TestCase("Series Title The Complete Series 1080p BluRay x265-GRP", "Series Title")]
+        [TestCase("Series.Title.Complete.Series.720p.WEB-DL.x264-GRP", "Series Title")]
+        public void should_parse_complete_series_release(string postTitle, string title)
+        {
+            var result = Parser.Parser.ParseTitle(postTitle);
+            result.Should().NotBeNull();
+            result.SeriesTitle.Should().Be(title);
+            result.EpisodeNumbers.Should().BeEmpty();
+            result.AbsoluteEpisodeNumbers.Should().BeEmpty();
+            result.FullSeason.Should().BeTrue();
+            result.IsMultiSeason.Should().BeFalse();
+            result.IsCompleteSeries.Should().BeTrue();
+        }
+
+        [TestCase("Series.Title.S02.COMPLETE.1080p.WEB.H264-GRP", 2)]
+        [TestCase("Series Title Saison 3 INTEGRALE FRENCH 1080p WEB H264-GRP", 3)]
+        public void should_not_parse_season_pack_as_complete_series(string postTitle, int season)
+        {
+            var result = Parser.Parser.ParseTitle(postTitle);
+            result.SeasonNumber.Should().Be(season);
+            result.FullSeason.Should().BeTrue();
+            result.IsCompleteSeries.Should().BeFalse();
         }
 
         [Test]

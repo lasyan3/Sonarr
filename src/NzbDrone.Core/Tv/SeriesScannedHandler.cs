@@ -52,7 +52,18 @@ namespace NzbDrone.Core.Tv
             // This way multiple searches for the same season are skipped, though a season that can't be upgraded may be
             // searched, but the logs will be more explicit.
 
-            if (addOptions.SearchForMissingEpisodes && addOptions.SearchForCutoffUnmetEpisodes)
+            // For an ended series search for a complete series pack first, then by season for what's still missing.
+
+            if (addOptions.SearchForMissingEpisodes && series.Status == SeriesStatusType.Ended)
+            {
+                _commandQueueManager.Push(new CompleteSeriesSearchCommand(series.Id));
+
+                if (addOptions.SearchForCutoffUnmetEpisodes)
+                {
+                    _commandQueueManager.Push(new CutoffUnmetEpisodeSearchCommand(series.Id));
+                }
+            }
+            else if (addOptions.SearchForMissingEpisodes && addOptions.SearchForCutoffUnmetEpisodes)
             {
                 _commandQueueManager.Push(new SeriesSearchCommand(series.Id));
             }

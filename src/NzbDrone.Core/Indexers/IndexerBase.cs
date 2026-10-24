@@ -81,6 +81,12 @@ namespace NzbDrone.Core.Indexers
         public abstract Task<IList<ReleaseInfo>> Fetch(AnimeEpisodeSearchCriteria searchCriteria);
         public abstract Task<IList<ReleaseInfo>> Fetch(AnimeSeasonSearchCriteria searchCriteria);
         public abstract Task<IList<ReleaseInfo>> Fetch(SpecialEpisodeSearchCriteria searchCriteria);
+
+        public virtual Task<IList<ReleaseInfo>> Fetch(CompleteSeriesSearchCriteria searchCriteria)
+        {
+            return Task.FromResult<IList<ReleaseInfo>>(Array.Empty<ReleaseInfo>());
+        }
+
         public abstract HttpRequest GetDownloadRequest(string link);
 
         protected virtual IList<ReleaseInfo> CleanupReleases(IEnumerable<ReleaseInfo> releases)
