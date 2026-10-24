@@ -48,6 +48,8 @@ jobs:
 
       - name: Compute version
         id: version
+        env:
+          SOURCE_BRANCH: ${{ github.head_ref || github.ref_name }}
         run: |
           # Sonarr détecte les mises à jour en comparant sa version à la dernière officielle :
           # il faut donc la version officielle exacte sur laquelle la branche est basée (ex. 4.0.20.3014).
@@ -65,6 +67,8 @@ jobs:
           # Version du paquet et tag de l'image : distingue chaque build du fork
           echo "version=${UPSTREAM}-lasyan3.${{ github.run_number }}" >> "$GITHUB_OUTPUT"
           echo "build_date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+          # Branche source (pas "1/merge" pour une PR), sans "/" qui casse le sed de build.sh
+          echo "branch=${SOURCE_BRANCH//\//-}" >> "$GITHUB_OUTPUT"
 
       - uses: docker/setup-buildx-action@v3
 
@@ -114,7 +118,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             SONARR_VERSION=${{ steps.version.outputs.sonarr_version }}
-            BRANCH=${{ github.ref_name }}
+            BRANCH=${{ steps.version.outputs.branch }}
             VERSION=${{ steps.version.outputs.version }}
             BUILD_DATE=${{ steps.version.outputs.build_date }}
           # Couches (apt/node, image de base...) réutilisées d'un run à l'autre
