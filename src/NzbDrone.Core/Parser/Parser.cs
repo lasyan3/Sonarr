@@ -239,6 +239,10 @@ namespace NzbDrone.Core.Parser
                 new Regex(@"^(?<title>.+?)(Complete Series)?[-_. ]+(?:S|(?:Season|Saison|Series|Stagione)[_. ])(?<season>(?<!\d+)(?:\d{1,2})(?!\d+))(?:[-_. ]{1}|[-_. ]{3})(?:S|(?:Season|Saison|Series|Stagione)[_. ])?(?<season>(?<!\d+)(?:\d{1,2})(?!\d+))",
                     RegexOptions.IgnoreCase | RegexOptions.Compiled),
 
+                // Complete series pack without season numbers (Complete Series, Integrale, etc)
+                new Regex(@"^(?![^\\/]*?[-_. ](?:S\d{1,2}|(?:Season|Saison|Stagione)[-_. ]?\d{1,2})(?:[-_. ]|$))(?<title>.+?)[-_. ]+(?<completeseries>(?:The[-_. ])?Complete[-_. ]Series|Int[eé]grale?)(?:[-_. ]|$)",
+                    RegexOptions.IgnoreCase | RegexOptions.Compiled),
+
                 // Partial season pack
                 new Regex(@"^(?<title>.+?)(?:\W+S(?<season>(?<!\d+)(?:\d{1,2})(?!\d+))\W+(?:(?:(?:Part|Vol)\W?|(?<!\d+\W+)e|p)(?<seasonpart>\d{1,2}(?!\d+)))+)",
                           RegexOptions.IgnoreCase | RegexOptions.Compiled),
@@ -1152,12 +1156,24 @@ namespace NzbDrone.Core.Parser
                 if (seasons.Distinct().Count() > 1)
                 {
                     result.IsMultiSeason = true;
+
+                    // Keep every season of a multi-season pack so all its episodes can be mapped
+                    if (result.FullSeason)
+                    {
+                        result.SeasonNumbers = Enumerable.Range(seasons.Min(), seasons.Max() - seasons.Min() + 1).ToArray();
+                    }
                 }
 
                 if (seasons.Any())
                 {
                     // If at least one season was parsed use the first season as the season
                     result.SeasonNumber = seasons.First();
+                }
+                else if (matchCollection[0].Groups["completeseries"].Success && result.FullSeason)
+                {
+                    // Complete series pack without season numbers, it contains every season
+                    result.SeasonNumber = 1;
+                    result.IsCompleteSeries = true;
                 }
                 else if (!result.AbsoluteEpisodeNumbers.Any() && result.EpisodeNumbers.Any())
                 {

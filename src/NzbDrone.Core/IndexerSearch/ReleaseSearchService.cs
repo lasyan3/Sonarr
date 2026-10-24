@@ -23,6 +23,7 @@ namespace NzbDrone.Core.IndexerSearch
         Task<List<DownloadDecision>> EpisodeSearch(Episode episode, bool userInvokedSearch, bool interactiveSearch);
         Task<List<DownloadDecision>> SeasonSearch(int seriesId, int seasonNumber, bool missingOnly, bool monitoredOnly, bool userInvokedSearch, bool interactiveSearch);
         Task<List<DownloadDecision>> SeasonSearch(int seriesId, int seasonNumber, List<Episode> episodes, bool monitoredOnly, bool userInvokedSearch, bool interactiveSearch);
+        Task<List<DownloadDecision>> CompleteSeriesSearch(int seriesId, bool monitoredOnly, bool userInvokedSearch, bool interactiveSearch);
     }
 
     public class ReleaseSearchService : ISearchForReleases
@@ -164,6 +165,22 @@ namespace NzbDrone.Core.IndexerSearch
                     }
                 }
             }
+
+            return DeDupeDecisions(downloadDecisions);
+        }
+
+        public async Task<List<DownloadDecision>> CompleteSeriesSearch(int seriesId, bool monitoredOnly, bool userInvokedSearch, bool interactiveSearch)
+        {
+            var series = _seriesService.GetSeries(seriesId);
+
+            // Specials are rarely part of complete series packs
+            var episodes = _episodeService.GetEpisodeBySeries(seriesId)
+                                          .Where(e => e.SeasonNumber > 0)
+                                          .ToList();
+
+            var searchSpec = Get<CompleteSeriesSearchCriteria>(series, episodes, monitoredOnly, userInvokedSearch, interactiveSearch);
+
+            var downloadDecisions = await Dispatch(indexer => indexer.Fetch(searchSpec), searchSpec);
 
             return DeDupeDecisions(downloadDecisions);
         }

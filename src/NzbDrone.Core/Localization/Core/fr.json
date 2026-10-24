@@ -2132,6 +2132,7 @@
     "ManageCustomFormats": "Gérer les formats personnalisés",
   "Menu": "Menu",
   "SylAddons": "Ajouts de lasyan3",
+  "SylAddonAddSeriesCompleteSeriesSearch": "Ajout de série : pour une série terminée, recherche d'abord une intégrale (Intégrale, S01-S05), puis saison par saison ce qui manque encore",
   "SylAddonAlternateTitlesEdit": "Titres alternatifs : ajouter, masquer ou réutiliser les titres alternatifs d'une série utilisés pour rechercher et identifier les releases",
   "SylAddonAnimeEpisodeSearchAbsoluteWithE": "Recherche d'épisode anime : recherche aussi le numéro absolu précédé de E (One Piece E1152)",
   "SylAddonAnimeSeasonSearchEpisodesIfNotAired": "Recherche de saison anime : ne recherche les épisodes un par un que si la saison n'est pas entièrement diffusée",

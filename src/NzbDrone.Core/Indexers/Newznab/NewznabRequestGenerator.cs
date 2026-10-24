@@ -494,6 +494,40 @@ namespace NzbDrone.Core.Indexers.Newznab
             return pageableRequests;
         }
 
+        public virtual IndexerPageableRequestChain GetSearchRequests(CompleteSeriesSearchCriteria searchCriteria)
+        {
+            var pageableRequests = new IndexerPageableRequestChain();
+
+            // Complete series packs are usually named "Title Integrale" or "Title Complete", search for those first
+            if (SupportsSearch)
+            {
+                foreach (var queryTitle in searchCriteria.CleanSceneTitles)
+                {
+                    foreach (var keyword in CompleteSeriesSearchCriteria.Keywords)
+                    {
+                        pageableRequests.Add(GetPagedRequests(MaxPages,
+                            Settings.Categories,
+                            "search",
+                            $"&q={NewsnabifyTitle($"{queryTitle} {keyword}")}"));
+                    }
+                }
+            }
+
+            // Fallback to a search for the series without season to find multi-season packs (S01-S05)
+            if (SupportsTvIdSearches &&
+                (searchCriteria.SearchMode.HasFlag(SearchMode.SearchID) || searchCriteria.SearchMode == SearchMode.Default))
+            {
+                pageableRequests.AddTier();
+
+                AddTvIdPageableRequests(pageableRequests,
+                    Settings.Categories,
+                    searchCriteria,
+                    string.Empty);
+            }
+
+            return pageableRequests;
+        }
+
         private void AddTvIdPageableRequests(IndexerPageableRequestChain chain, IEnumerable<int> categories, SearchCriteriaBase searchCriteria, string parameters)
         {
             var includeTvdbSearch = SupportsTvdbSearch && searchCriteria.Series.TvdbId > 0;
