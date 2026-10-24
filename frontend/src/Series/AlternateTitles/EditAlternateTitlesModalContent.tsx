@@ -199,34 +199,30 @@ function EditAlternateTitlesModalContent({
         ) : null}
 
         <div className={styles.addForm}>
-          <div className={styles.titleInput}>
-            <FormGroup>
-              <FormLabel>{translate('AddAlternateTitle')}</FormLabel>
+          <FormGroup>
+            <FormLabel>{translate('AddAlternateTitle')}</FormLabel>
 
-              <FormInputGroup
-                type={inputTypes.TEXT}
-                name="title"
-                value={newTitle}
-                helpText={translate('AddAlternateTitleHelpText')}
-                onChange={handleTitleChange}
-              />
-            </FormGroup>
-          </div>
+            <FormInputGroup
+              type={inputTypes.TEXT}
+              name="title"
+              value={newTitle}
+              helpText={translate('AddAlternateTitleHelpText')}
+              onChange={handleTitleChange}
+            />
+          </FormGroup>
 
-          <div className={styles.seasonNumberInput}>
-            <FormGroup>
-              <FormLabel>{translate('SeasonNumber')}</FormLabel>
+          <FormGroup>
+            <FormLabel>{translate('SeasonNumber')}</FormLabel>
 
-              <FormInputGroup
-                type={inputTypes.NUMBER}
-                name="seasonNumber"
-                value={newSeasonNumber}
-                min={0}
-                helpText={translate('AlternateTitleSeasonNumberHelpText')}
-                onChange={handleSeasonNumberChange}
-              />
-            </FormGroup>
-          </div>
+            <FormInputGroup
+              type={inputTypes.NUMBER}
+              name="seasonNumber"
+              value={newSeasonNumber}
+              min={0}
+              helpText={translate('AlternateTitleSeasonNumberHelpText')}
+              onChange={handleSeasonNumberChange}
+            />
+          </FormGroup>
         </div>
 
         {saveError ? <Alert kind={kinds.DANGER}>{saveError}</Alert> : null}
