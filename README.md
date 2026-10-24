@@ -13,12 +13,25 @@ This fork follows the official Sonarr releases and adds a few changes on top of 
 
 ### Addons
 
-- **Alternate titles**: add, hide or restore the alternate titles of a series, which are used to search and identify releases.
-- **Anime episode search**: also searches the absolute episode number prefixed with `E` (e.g. `One Piece E1152`), a naming used by some indexers.
-- **Anime season search**: only searches individual episodes when the season has not fully aired.
-- **Anime season search**: when there are no results and the anime has a single season, searches again without the season number (e.g. `Gungrave`).
-- **Season search**: when the season has not fully aired, searches individual episodes instead of a season pack.
-- **Manual import**: ignores symbolic links.
+#### Season search
+
+Sonarr searches a season differently depending on the series type. This fork makes Standard and Anime series behave the same way: search the season pack, and only search episodes one by one while the season is still airing. Daily series are unchanged.
+
+- **Standard series**: when the season has not fully aired, also searches the aired episodes one by one.
+  _Why_: Sonarr only searches the season pack, which does not exist yet for a season that is still airing, so nothing is found.
+- **Anime series**: only searches episodes one by one for the last season of an anime that is still airing.
+  _Why_: Sonarr searches every episode individually after each anime season search. For a finished season, packs exist and these extra searches mostly flood the indexers (and hit their API limits) for nothing.
+- **Anime series**: for an ended anime with a single season, searches without the season number.
+  _Why_: such anime are usually released without any season number (e.g. `Gungrave 01-26`), so a search restricted to season 1 finds nothing.
+
+#### Other
+
+- **Anime episode search**: in addition to `One Piece 1152`, also searches `One Piece E1152`.
+  _Why_: some releases name anime episodes with an `E` prefix before the absolute number, and the indexers' text search does not find them with the number alone.
+- **Alternate titles**: add, hide or restore the alternate titles of a series from the series page.
+  _Why_: alternate titles come from scene mappings and are used both to build searches and to match releases. A missing title (e.g. a local title) means releases are never found, and an irrelevant one leads to useless searches or wrong matches. Sonarr does not let you change them.
+- **Manual import**: ignores symbolic links when scanning a folder.
+  _Why_: symbolic links point to files that already exist elsewhere (e.g. already imported or managed by another tool), so they show up as duplicates in the manual import list.
 
 ### Docker image
 
