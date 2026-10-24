@@ -1,13 +1,13 @@
 name: Docker (lasyan3)
 
+# Pas de déclenchement sur push : un commit direct sur develop ne lance rien.
+# PR ouverte/mise à jour : build seul pour la valider.
+# PR fusionnée : build du commit de fusion, publication de l'image et déploiement.
 on:
-  push:
-    branches:
-      - develop
-  # Build seul (sans push ni déploiement) pour valider une PR avant de la merger
   pull_request:
     branches:
       - develop
+    types: [opened, synchronize, reopened, closed]
   workflow_dispatch:
     inputs:
       deploy:
@@ -24,6 +24,8 @@ env:
 
 jobs:
   build:
+    # Une PR fermée sans être fusionnée ne lance rien
+    if: github.event.action != 'closed' || github.event.pull_request.merged
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -35,6 +37,8 @@ jobs:
         uses: actions/checkout@v5
         with:
           path: Sonarr
+          # PR fusionnée : le commit de fusion arrivé sur develop (sinon la ref par défaut)
+          ref: ${{ github.event.pull_request.merged && github.event.pull_request.merge_commit_sha || '' }}
           # Historique complet pour retrouver la version officielle incluse dans la branche
           fetch-depth: 0
 
@@ -49,7 +53,7 @@ jobs:
       - name: Compute version
         id: version
         env:
-          SOURCE_BRANCH: ${{ github.head_ref || github.ref_name }}
+          SOURCE_BRANCH: ${{ github.event.pull_request.merged && github.base_ref || github.head_ref || github.ref_name }}
         run: |
           # Sonarr détecte les mises à jour en comparant sa version à la dernière officielle :
           # il faut donc la version officielle exacte sur laquelle la branche est basée (ex. 4.0.20.3014).
@@ -67,13 +71,13 @@ jobs:
           # Version du paquet et tag de l'image : distingue chaque build du fork
           echo "version=${UPSTREAM}-lasyan3.${{ github.run_number }}" >> "$GITHUB_OUTPUT"
           echo "build_date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
-          # Branche source (pas "1/merge" pour une PR), sans "/" qui casse le sed de build.sh
+          # Branche source (pas "1/merge" pour une PR, develop une fois fusionnée), sans "/" qui casse le sed de build.sh
           echo "branch=${SOURCE_BRANCH//\//-}" >> "$GITHUB_OUTPUT"
 
       - uses: docker/setup-buildx-action@v3
 
       - uses: docker/login-action@v3
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' || github.event.pull_request.merged
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -113,7 +117,7 @@ jobs:
           context: .
           file: Sonarr/.github/docker/Dockerfile
           platforms: linux/amd64
-          push: ${{ github.event_name != 'pull_request' }}
+          push: ${{ github.event_name != 'pull_request' || github.event.pull_request.merged }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
@@ -127,7 +131,7 @@ jobs:
 
   deploy:
     needs: build
-    if: github.event_name == 'push' || inputs.deploy
+    if: github.event.pull_request.merged || inputs.deploy
     runs-on: [self-hosted, unraid]
     permissions:
       packages: read
