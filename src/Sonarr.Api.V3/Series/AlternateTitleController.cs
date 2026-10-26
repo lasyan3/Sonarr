@@ -38,6 +38,7 @@ namespace Sonarr.Api.V3.Series
                                        {
                                            var resource = m.ToResource();
                                            resource.IsExcluded = excludedParseTerms.Contains(m.ParseTerm);
+                                           resource.IsIgnored = series.IgnoreAlternateTitles && m.Type != SceneMappingService.CustomMappingType;
 
                                            return resource;
                                        })

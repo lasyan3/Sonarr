@@ -10,6 +10,7 @@ using NzbDrone.Core.DataAugmentation.Scene;
 using NzbDrone.Core.Exceptions;
 using NzbDrone.Core.Test.Framework;
 using NzbDrone.Core.Tv;
+using NzbDrone.Core.Tv.Events;
 using NzbDrone.Test.Common;
 
 namespace NzbDrone.Core.Test.DataAugmentation.Scene
@@ -48,6 +49,8 @@ namespace NzbDrone.Core.Test.DataAugmentation.Scene
 
             _provider2 = new Mock<ISceneMappingProvider>();
             _provider2.Setup(s => s.GetSceneMappings()).Returns(_fakeMappings);
+
+            Mocker.GetMock<ISeriesService>().Setup(c => c.GetAllSeries()).Returns(new List<Series>());
         }
 
         private void GivenProviders(IEnumerable<Mock<ISceneMappingProvider>> providers)
@@ -544,6 +547,73 @@ namespace NzbDrone.Core.Test.DataAugmentation.Scene
             Subject.RemoveExclusion(100, "Amareto");
 
             Mocker.GetMock<ISceneMappingExclusionRepository>().Verify(c => c.DeleteMany(It.Is<List<SceneMappingExclusion>>(l => l.Count == 1)), Times.Once());
+        }
+
+        [Test]
+        public void should_return_all_mappings_for_series_not_ignoring_alternate_titles()
+        {
+            GivenProviderAndCustomMappings();
+            GivenSeriesIgnoringAlternateTitles(false);
+
+            Subject.FindTvdbId("Amareto", null, -1).Should().Be(100);
+            Subject.FindTvdbId("Amaretto Custom", null, -1).Should().Be(100);
+            Subject.FindByTvdbId(100).Should().HaveCount(2);
+        }
+
+        [Test]
+        public void should_only_return_custom_mappings_for_series_ignoring_alternate_titles()
+        {
+            GivenProviderAndCustomMappings();
+            GivenSeriesIgnoringAlternateTitles(true);
+
+            Subject.FindTvdbId("Amareto", null, -1).Should().BeNull();
+            Subject.FindTvdbId("Amaretto Custom", null, -1).Should().Be(100);
+            Subject.GetSceneNames(100, new List<int> { 1 }, new List<int> { 1 }).Should().BeEquivalentTo("Amaretto Custom");
+            Subject.FindByTvdbId(100).Should().ContainSingle(m => m.Type == SceneMappingService.CustomMappingType);
+        }
+
+        [Test]
+        public void should_refresh_mappings_when_series_starts_ignoring_alternate_titles()
+        {
+            GivenProviderAndCustomMappings();
+            GivenSeriesIgnoringAlternateTitles(false);
+
+            Subject.FindByTvdbId(100).Should().HaveCount(2);
+
+            GivenSeriesIgnoringAlternateTitles(true);
+
+            Subject.Handle(new SeriesEditedEvent(new Series { TvdbId = 100, IgnoreAlternateTitles = true },
+                                                 new Series { TvdbId = 100, IgnoreAlternateTitles = false }));
+
+            Subject.FindByTvdbId(100).Should().HaveCount(1);
+            Subject.FindTvdbId("Amareto", null, -1).Should().BeNull();
+        }
+
+        [Test]
+        public void should_not_refresh_mappings_when_series_edit_does_not_change_ignore_alternate_titles()
+        {
+            Subject.Handle(new SeriesEditedEvent(new Series { TvdbId = 100, IgnoreAlternateTitles = true },
+                                                 new Series { TvdbId = 100, IgnoreAlternateTitles = true }));
+
+            Mocker.GetMock<ISceneMappingRepository>().Verify(c => c.All(), Times.Never());
+        }
+
+        private void GivenProviderAndCustomMappings()
+        {
+            var mappings = new List<SceneMapping>
+            {
+                new SceneMapping { Title = "Amareto", ParseTerm = "amareto", SearchTerm = "Amareto", TvdbId = 100, Type = "ServicesProvider" },
+                new SceneMapping { Title = "Amaretto Custom", ParseTerm = "amarettocustom", SearchTerm = "Amaretto Custom", TvdbId = 100, Type = SceneMappingService.CustomMappingType }
+            };
+
+            Mocker.GetMock<ISceneMappingRepository>().Setup(c => c.All()).Returns(mappings);
+            GivenExclusions();
+        }
+
+        private void GivenSeriesIgnoringAlternateTitles(bool ignoreAlternateTitles)
+        {
+            Mocker.GetMock<ISeriesService>().Setup(c => c.GetAllSeries())
+                  .Returns(new List<Series> { new Series { TvdbId = 100, IgnoreAlternateTitles = ignoreAlternateTitles } });
         }
 
         private void GivenExclusions(params SceneMappingExclusion[] exclusions)

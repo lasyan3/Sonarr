@@ -61,6 +61,7 @@ export interface AlternateTitle {
   comment?: string;
   source: AlternateTitleSource;
   isExcluded: boolean;
+  isIgnored: boolean;
 }
 
 export interface SeriesAddOptions {
