@@ -59,6 +59,7 @@ namespace NzbDrone.Common.EnvironmentInfo
         {
             "SylAddonAddSeriesCompleteSeriesSearch",
             "SylAddonAlternateTitlesEdit",
+            "SylAddonAlternateTitlesIgnore",
             "SylAddonAnimeEpisodeSearchAbsoluteWithE",
             "SylAddonAnimeSeasonSearchEpisodesIfNotAired",
             "SylAddonAnimeSeasonSearchWithoutSeasonNumber",

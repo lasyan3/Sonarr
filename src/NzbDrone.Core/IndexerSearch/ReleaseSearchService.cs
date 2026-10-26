@@ -189,7 +189,7 @@ namespace NzbDrone.Core.IndexerSearch
         {
             var dict = new Dictionary<SceneSeasonMapping, SceneSeasonMapping>();
 
-            var sceneMappings = _sceneMapping.FindByTvdbId(series.TvdbId);
+            var sceneMappings = GetSearchSceneMappings(series);
 
             // Group the episode by SceneSeasonNumber/SeasonNumber, in 99% of cases this will result in 1 groupedEpisode
             var groupedEpisodes = episodes.ToLookup(v => ((v.SceneSeasonNumber ?? v.SeasonNumber) * 100000) + v.SeasonNumber);
@@ -230,11 +230,24 @@ namespace NzbDrone.Core.IndexerSearch
             return dict.Values.ToList();
         }
 
+        // When alternate titles are ignored for the series, only the custom ones are used to search
+        private List<SceneMapping> GetSearchSceneMappings(Series series)
+        {
+            var sceneMappings = _sceneMapping.FindByTvdbId(series.TvdbId);
+
+            if (series.IgnoreAlternateTitles)
+            {
+                return sceneMappings.Where(m => m.Type == SceneMappingService.CustomMappingType).ToList();
+            }
+
+            return sceneMappings;
+        }
+
         private List<SceneEpisodeMapping> GetSceneEpisodeMappings(Series series, Episode episode)
         {
             var dict = new Dictionary<SceneEpisodeMapping, SceneEpisodeMapping>();
 
-            var sceneMappings = _sceneMapping.FindByTvdbId(series.TvdbId);
+            var sceneMappings = GetSearchSceneMappings(series);
 
             var episodeMappings = GetSceneEpisodeMappings(series, episode, sceneMappings);
 
@@ -507,6 +520,13 @@ namespace NzbDrone.Core.IndexerSearch
             spec.SceneTitles = _sceneMapping.GetSceneNames(series.TvdbId,
                                                            episodes.Select(e => e.SeasonNumber).Distinct().ToList(),
                                                            episodes.Select(e => e.SceneSeasonNumber ?? e.SeasonNumber).Distinct().ToList());
+
+            if (series.IgnoreAlternateTitles)
+            {
+                var customSearchTerms = GetSearchSceneMappings(series).Select(m => m.SearchTerm).ToHashSet(StringComparer.InvariantCultureIgnoreCase);
+
+                spec.SceneTitles = spec.SceneTitles.Where(customSearchTerms.Contains).ToList();
+            }
 
             spec.Episodes = episodes;
             spec.MonitoredEpisodesOnly = monitoredOnly;

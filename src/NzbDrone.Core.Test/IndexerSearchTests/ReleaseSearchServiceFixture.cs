@@ -41,6 +41,7 @@ namespace NzbDrone.Core.Test.IndexerSearchTests
             _xemSeries = Builder<Series>.CreateNew()
                 .With(v => v.UseSceneNumbering = true)
                 .With(v => v.Monitored = true)
+                .With(v => v.IgnoreAlternateTitles = false)
                 .Build();
 
             _xemEpisodes = new List<Episode>();
@@ -649,6 +650,90 @@ namespace NzbDrone.Core.Test.IndexerSearchTests
             allCriteria.Last().Should().BeOfType<SingleEpisodeSearchCriteria>();
             allCriteria.Last().As<SingleEpisodeSearchCriteria>().SeasonNumber.Should().Be(2);
             allCriteria.Last().As<SingleEpisodeSearchCriteria>().EpisodeNumber.Should().Be(3);
+        }
+
+        private void WithProviderAndCustomAlternateTitles()
+        {
+            Mocker.GetMock<ISceneMappingService>()
+                .Setup(s => s.FindByTvdbId(It.IsAny<int>()))
+                .Returns(new List<SceneMapping>
+                {
+                    new SceneMapping
+                    {
+                        TvdbId = _xemSeries.TvdbId,
+                        SearchTerm = "Provider Title",
+                        ParseTerm = "providertitle",
+                        SeasonNumber = 1,
+                        SceneSeasonNumber = 1,
+                        Type = "ServicesProvider"
+                    },
+                    new SceneMapping
+                    {
+                        TvdbId = _xemSeries.TvdbId,
+                        SearchTerm = "Custom Title",
+                        ParseTerm = "customtitle",
+                        Type = SceneMappingService.CustomMappingType
+                    }
+                });
+
+            Mocker.GetMock<ISceneMappingService>()
+                .Setup(s => s.GetSceneNames(It.IsAny<int>(), It.IsAny<List<int>>(), It.IsAny<List<int>>()))
+                .Returns(new List<string> { "Provider Title", "Custom Title" });
+        }
+
+        [Test]
+        public async Task episode_search_should_use_all_alternate_titles_when_not_ignored()
+        {
+            WithEpisode(1, 12, null, null);
+            WithProviderAndCustomAlternateTitles();
+
+            var allCriteria = WatchForSearchCriteria();
+
+            await Subject.EpisodeSearch(_xemEpisodes.First(), false, false);
+
+            var sceneTitles = allCriteria.SelectMany(c => c.SceneTitles).ToList();
+
+            sceneTitles.Should().Contain("Provider Title");
+            sceneTitles.Should().Contain("Custom Title");
+        }
+
+        [Test]
+        public async Task episode_search_should_only_use_custom_alternate_titles_when_ignored()
+        {
+            _xemSeries.IgnoreAlternateTitles = true;
+
+            WithEpisode(1, 12, null, null);
+            WithProviderAndCustomAlternateTitles();
+
+            var allCriteria = WatchForSearchCriteria();
+
+            await Subject.EpisodeSearch(_xemEpisodes.First(), false, false);
+
+            var sceneTitles = allCriteria.SelectMany(c => c.SceneTitles).ToList();
+
+            allCriteria.Should().NotBeEmpty();
+            sceneTitles.Should().NotContain("Provider Title");
+            sceneTitles.Should().Contain("Custom Title");
+        }
+
+        [Test]
+        public async Task season_search_should_only_use_custom_alternate_titles_when_ignored()
+        {
+            _xemSeries.IgnoreAlternateTitles = true;
+
+            WithEpisode(1, 12, null, null);
+            WithEpisode(1, 13, null, null);
+            WithProviderAndCustomAlternateTitles();
+
+            var allCriteria = WatchForSearchCriteria();
+
+            await Subject.SeasonSearch(_xemSeries.Id, 1, false, false, true, false);
+
+            var sceneTitles = allCriteria.SelectMany(c => c.SceneTitles).ToList();
+
+            allCriteria.Should().NotBeEmpty();
+            sceneTitles.Should().NotContain("Provider Title");
+            sceneTitles.Should().Contain("Custom Title");
         }
     }
 }
