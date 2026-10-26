@@ -32,6 +32,8 @@ Sonarr searches a season differently depending on the series type. This fork mak
   _Why_: some releases name anime episodes with an `E` prefix before the absolute number, and the indexers' text search does not find them with the number alone.
 - **Alternate titles**: add, hide or restore the alternate titles of a series from the series page.
   _Why_: alternate titles come from scene mappings and are used both to build searches and to match releases. A missing title (e.g. a local title) means releases are never found, and an irrelevant one leads to useless searches or wrong matches. Sonarr does not let you change them.
+- **Ignore alternate titles**: a per-series option (in the series edit, mass editor and add series dialogs, enabled by default) to search without the alternate titles coming from scene mappings. Custom alternate titles are still used.
+  _Why_: scene mappings often contain titles in other languages or loose variants that flood the indexers with useless searches and bring back unrelated releases. Searching with the series title, plus the custom titles chosen for this series, is more reliable. Releases are still matched using all the alternate titles that are not hidden.
 - **Manual import**: ignores symbolic links when scanning a folder.
   _Why_: symbolic links point to files that already exist elsewhere (e.g. already imported or managed by another tool), so they show up as duplicates in the manual import list.
 
