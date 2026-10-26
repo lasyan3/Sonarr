@@ -34,6 +34,8 @@ namespace NzbDrone.Core.DataAugmentation.Scene
                                        IHandle<SeriesRefreshStartingEvent>,
                                        IHandle<SeriesAddedEvent>,
                                        IHandle<SeriesImportedEvent>,
+                                       IHandle<SeriesEditedEvent>,
+                                       IHandle<SeriesBulkEditedEvent>,
                                        IExecute<UpdateSceneMappingCommand>
     {
         public const string CustomMappingType = "Custom";
@@ -169,9 +171,9 @@ namespace NzbDrone.Core.DataAugmentation.Scene
             mapping.SearchTerm = mapping.SearchTerm.IsNullOrWhiteSpace() ? mapping.Title : mapping.SearchTerm.Trim();
             mapping.Type = CustomMappingType;
 
-            var excludedParseTerms = GetExcludedParseTerms();
+            var isActive = GetActiveMappingFilter();
             var existing = _repository.All()
-                                      .Where(v => v.ParseTerm == mapping.ParseTerm && !excludedParseTerms.Contains(GetExclusionKey(v.TvdbId, v.ParseTerm)))
+                                      .Where(v => v.ParseTerm == mapping.ParseTerm && isActive(v))
                                       .ToList();
 
             if (existing.Any(v => v.TvdbId != mapping.TvdbId))
@@ -336,9 +338,9 @@ namespace NzbDrone.Core.DataAugmentation.Scene
 
         private void RefreshCache()
         {
-            var excludedParseTerms = GetExcludedParseTerms();
+            var isActive = GetActiveMappingFilter();
             var mappings = _repository.All()
-                                      .Where(v => !excludedParseTerms.Contains(GetExclusionKey(v.TvdbId, v.ParseTerm)))
+                                      .Where(isActive)
                                       .ToList();
 
             _getTvdbIdCache.Update(mappings.GroupBy(v => v.ParseTerm).ToDictionary(v => v.Key, v => v.ToList()));
@@ -352,9 +354,14 @@ namespace NzbDrone.Core.DataAugmentation.Scene
             _eventAggregator.PublishEvent(new SceneMappingsUpdatedEvent());
         }
 
-        private HashSet<string> GetExcludedParseTerms()
+        // Excluded titles and, for series ignoring alternate titles, all non custom titles are neither used to search nor to parse releases
+        private Func<SceneMapping, bool> GetActiveMappingFilter()
         {
-            return _exclusionRepository.All().Select(v => GetExclusionKey(v.TvdbId, v.ParseTerm)).ToHashSet();
+            var excludedParseTerms = _exclusionRepository.All().Select(v => GetExclusionKey(v.TvdbId, v.ParseTerm)).ToHashSet();
+            var ignoredTvdbIds = _seriesService.GetAllSeries().Where(v => v.IgnoreAlternateTitles).Select(v => v.TvdbId).ToHashSet();
+
+            return v => !excludedParseTerms.Contains(GetExclusionKey(v.TvdbId, v.ParseTerm)) &&
+                        (v.Type == CustomMappingType || !ignoredTvdbIds.Contains(v.TvdbId));
         }
 
         private static string GetExclusionKey(int tvdbId, string parseTerm)
@@ -428,6 +435,10 @@ namespace NzbDrone.Core.DataAugmentation.Scene
             {
                 UpdateMappings();
             }
+            else if (message.Series.IgnoreAlternateTitles)
+            {
+                OnMappingsChanged();
+            }
         }
 
         public void Handle(SeriesImportedEvent message)
@@ -436,6 +447,19 @@ namespace NzbDrone.Core.DataAugmentation.Scene
             {
                 UpdateMappings();
             }
+        }
+
+        public void Handle(SeriesEditedEvent message)
+        {
+            if (message.Series.IgnoreAlternateTitles != message.OldSeries.IgnoreAlternateTitles)
+            {
+                OnMappingsChanged();
+            }
+        }
+
+        public void Handle(SeriesBulkEditedEvent message)
+        {
+            OnMappingsChanged();
         }
 
         public void Execute(UpdateSceneMappingCommand message)

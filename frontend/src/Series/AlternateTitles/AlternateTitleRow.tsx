@@ -47,9 +47,18 @@ function AlternateTitleRow({
     comment,
     source,
     isExcluded,
+    isIgnored,
   } = alternateTitle;
 
   const sourceLabel = sourceLabels[source] ?? sourceLabels.unknown;
+
+  let excludeTitle = isExcluded
+    ? translate('ShowAlternateTitle')
+    : translate('HideAlternateTitle');
+
+  if (isIgnored) {
+    excludeTitle = translate('AlternateTitleIgnored');
+  }
 
   const handleDeletePress = useCallback(() => {
     onDeletePress(id);
@@ -63,7 +72,10 @@ function AlternateTitleRow({
     <TableRow>
       <TableRowCell>
         <span
-          className={classNames(styles.title, isExcluded && styles.excluded)}
+          className={classNames(
+            styles.title,
+            (isExcluded || isIgnored) && styles.excluded
+          )}
         >
           {title}
         </span>
@@ -90,12 +102,8 @@ function AlternateTitleRow({
         ) : (
           <IconButton
             name={isExcluded ? icons.VIEW : icons.HIDDEN}
-            title={
-              isExcluded
-                ? translate('ShowAlternateTitle')
-                : translate('HideAlternateTitle')
-            }
-            isDisabled={isSaving}
+            title={excludeTitle}
+            isDisabled={isSaving || isIgnored}
             onPress={handleExcludePress}
           />
         )}

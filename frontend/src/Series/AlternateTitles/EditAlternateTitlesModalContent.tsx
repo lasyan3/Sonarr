@@ -170,6 +170,12 @@ function EditAlternateTitlesModalContent({
       <ModalBody>
         <Alert kind={kinds.INFO}>{translate('EditAlternateTitlesInfo')}</Alert>
 
+        {data?.some((alternateTitle) => alternateTitle.isIgnored) ? (
+          <Alert kind={kinds.WARNING}>
+            {translate('IgnoreAlternateTitlesEnabledInfo')}
+          </Alert>
+        ) : null}
+
         {isLoading ? <LoadingIndicator /> : null}
 
         {!isLoading && error ? (

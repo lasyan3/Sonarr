@@ -22,6 +22,7 @@ namespace Sonarr.Api.V3.Series
         public string Comment { get; set; }
         public AlternateTitleSource Source { get; set; }
         public bool IsExcluded { get; set; }
+        public bool IsIgnored { get; set; }
     }
 
     public static class AlternateTitleResourceMapper
