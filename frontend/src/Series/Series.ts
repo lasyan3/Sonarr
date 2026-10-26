@@ -108,6 +108,7 @@ interface Series extends ModelBase {
   year: number;
   isSaving?: boolean;
   addOptions: SeriesAddOptions;
+  ignoreAlternateTitles: boolean;
 }
 
 export default Series;

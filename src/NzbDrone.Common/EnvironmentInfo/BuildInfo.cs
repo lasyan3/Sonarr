@@ -58,6 +58,7 @@ namespace NzbDrone.Common.EnvironmentInfo
         public static IReadOnlyCollection<string> Addons { get; } = new List<string>()
         {
             "SylAddonAlternateTitlesEdit",
+            "SylAddonAlternateTitlesIgnore",
             "SylAddonAnimeEpisodeSearchAbsoluteWithE",
             "SylAddonAnimeSeasonSearchEpisodesIfNotAired",
             "SylAddonAnimeSeasonSearchWithoutSeasonNumber",
