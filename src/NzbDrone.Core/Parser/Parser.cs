@@ -239,8 +239,8 @@ namespace NzbDrone.Core.Parser
                 new Regex(@"^(?<title>.+?)(Complete Series)?[-_. ]+(?:S|(?:Season|Saison|Series|Stagione)[_. ])(?<season>(?<!\d+)(?:\d{1,2})(?!\d+))(?:[-_. ]{1}|[-_. ]{3})(?:S|(?:Season|Saison|Series|Stagione)[_. ])?(?<season>(?<!\d+)(?:\d{1,2})(?!\d+))",
                     RegexOptions.IgnoreCase | RegexOptions.Compiled),
 
-                // Complete series pack without season numbers (Complete Series, Integrale, etc)
-                new Regex(@"^(?![^\\/]*?[-_. ](?:S\d{1,2}|(?:Season|Saison|Stagione)[-_. ]?\d{1,2})(?:[-_. ]|$))(?<title>.+?)[-_. ]+(?<completeseries>(?:The[-_. ])?Complete[-_. ]Series|Int[eé]grale?)(?:[-_. ]|$)",
+                // Complete series pack without season numbers (Integrale, Complete, Complete Series, etc), not if the title has season, episode or air date markers
+                new Regex(@"^(?![^\\/]*?\W(?:S\d{1,2}|(?:Season|Saison|Series|Stagione)\W?\d{1,2}|E(?:p|pisode)?\W?\d{1,4}|\d{1,2}x\d{1,3}|(?:Part|Vol)\W?\d{1,2}|\d{1,3}-\d{1,3}|-\W\d{1,4}|(?:19|20)\d{2}\W\d{2}\W\d{2})(?:\W|$|[EX]\d))(?:\[(?<subgroup>.+?)\]\W?)?(?<title>.+?)\W+(?<completeseries>(?:The\W)?Complete(?:\WSeries)?|Int[eé]grale?)(?:\W|$)(?!(?:.*?\W)?(?!(?:19|20)\d{2}(?:\W|$))\d{3,4}(?:\W|$))",
                     RegexOptions.IgnoreCase | RegexOptions.Compiled),
 
                 // Partial season pack

@@ -26,7 +26,7 @@ Sonarr searches a season differently depending on the series type. This fork mak
 
 #### Other
 
-- **Add series**: when an ended series is added with "search for missing episodes", first searches for a complete series pack (`Intégrale`, `Complete Series`, `S01-S05`...), then searches season by season only for the episodes still missing.
+- **Add series and series search**: for an ended series, adding it with "search for missing episodes" or using the search button of the series first searches for a complete series pack (`Intégrale`, `Complete`, `Complete Series`, `S01-S05`...), then searches season by season only for the episodes not covered by the pack.
   _Why_: ended series are often released as a single complete pack. Searching each season separately misses those packs and grabs a mix of season packs from different releases.
 - **Anime episode search**: in addition to `One Piece 1152`, also searches `One Piece E1152`.
   _Why_: some releases name anime episodes with an `E` prefix before the absolute number, and the indexers' text search does not find them with the number alone.
