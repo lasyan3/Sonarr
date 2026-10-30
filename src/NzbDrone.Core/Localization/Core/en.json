@@ -2170,7 +2170,7 @@
   "Yesterday": "Yesterday",
   "YesterdayAt": "Yesterday at {time}",
   "SylAddons": "lasyan3's addons",
-  "SylAddonAddSeriesCompleteSeriesSearch": "Add series: for an ended series, first search for a complete series pack (Intégrale, S01-S05), then by season for what is still missing",
+  "SylAddonAddSeriesCompleteSeriesSearch": "Add series and series search: for an ended series, first search for a complete series pack (Intégrale, Complete, S01-S05), then by season for what is still missing",
   "SylAddonAlternateTitlesEdit": "Alternate titles: add, hide or restore the alternate titles of a series used to search and identify releases",
   "SylAddonAlternateTitlesIgnore": "Alternate titles: option to ignore the alternate titles of a series, except custom ones, to search and to match releases (enabled by default)",
   "SylAddonAnimeEpisodeSearchAbsoluteWithE": "Anime episode search: also search the absolute episode number prefixed with E (One Piece E1152)",

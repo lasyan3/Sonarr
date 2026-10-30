@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using NLog;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Instrumentation.Extensions;
+using NzbDrone.Core.DecisionEngine;
 using NzbDrone.Core.Download;
 using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Tv;
@@ -35,6 +37,21 @@ namespace NzbDrone.Core.IndexerSearch
             var series = _seriesService.GetSeries(message.SeriesId);
             var downloadedCount = 0;
             var userInvokedSearch = message.Trigger == CommandTrigger.Manual;
+            var coveredEpisodeIds = new HashSet<int>();
+
+            // For an ended series search for a complete series pack first, then only search for what it doesn't cover
+            if (series.Status == SeriesStatusType.Ended)
+            {
+                var decisions = _releaseSearchService.CompleteSeriesSearch(series.Id, true, userInvokedSearch, false).GetAwaiter().GetResult();
+                var processDecisions = _processDownloadDecisions.ProcessDecisions(decisions).GetAwaiter().GetResult();
+                downloadedCount += processDecisions.Grabbed.Count;
+
+                coveredEpisodeIds = processDecisions.Grabbed
+                                                    .Concat(processDecisions.Pending)
+                                                    .SelectMany(d => d.RemoteEpisode.Episodes)
+                                                    .Select(e => e.Id)
+                                                    .ToHashSet();
+            }
 
             if (series.Seasons.None(s => s.Monitored))
             {
@@ -44,7 +61,8 @@ namespace NzbDrone.Core.IndexerSearch
                     .Where(e => e.Monitored &&
                                 !e.HasFile &&
                                 e.AirDateUtc.HasValue &&
-                                e.AirDateUtc.Value.Before(DateTime.UtcNow))
+                                e.AirDateUtc.Value.Before(DateTime.UtcNow) &&
+                                !coveredEpisodeIds.Contains(e.Id))
                     .ToList();
 
                 foreach (var episode in episodes)
@@ -64,7 +82,27 @@ namespace NzbDrone.Core.IndexerSearch
                         continue;
                     }
 
-                    var decisions = _releaseSearchService.SeasonSearch(message.SeriesId, season.SeasonNumber, false, true, userInvokedSearch, false).GetAwaiter().GetResult();
+                    List<DownloadDecision> decisions;
+
+                    if (coveredEpisodeIds.Any())
+                    {
+                        var episodes = _episodeService.GetEpisodesBySeason(series.Id, season.SeasonNumber)
+                            .Where(e => !coveredEpisodeIds.Contains(e.Id))
+                            .ToList();
+
+                        if (episodes.Empty())
+                        {
+                            _logger.Debug("Season {0} of {1} is covered by a complete series pack, skipping search", season.SeasonNumber, series.Title);
+                            continue;
+                        }
+
+                        decisions = _releaseSearchService.SeasonSearch(message.SeriesId, season.SeasonNumber, episodes, true, userInvokedSearch, false).GetAwaiter().GetResult();
+                    }
+                    else
+                    {
+                        decisions = _releaseSearchService.SeasonSearch(message.SeriesId, season.SeasonNumber, false, true, userInvokedSearch, false).GetAwaiter().GetResult();
+                    }
+
                     var processDecisions = _processDownloadDecisions.ProcessDecisions(decisions).GetAwaiter().GetResult();
                     downloadedCount += processDecisions.Grabbed.Count;
                 }

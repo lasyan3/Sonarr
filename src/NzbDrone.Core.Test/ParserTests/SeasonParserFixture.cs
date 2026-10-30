@@ -127,6 +127,15 @@ namespace NzbDrone.Core.Test.ParserTests
         [TestCase("Series.Title.2005.INTEGRAL.MULTi.1080p.BluRay.x264-GRP", "Series Title 2005")]
         [TestCase("Series Title The Complete Series 1080p BluRay x265-GRP", "Series Title")]
         [TestCase("Series.Title.Complete.Series.720p.WEB-DL.x264-GRP", "Series Title")]
+        [TestCase("Series Title Complete 1080p BluRay x265-GRP", "Series Title")]
+        [TestCase("Series.Title.COMPLETE.720p.WEB-DL.x264-GRP", "Series Title")]
+        [TestCase("Series Title (2018) Complete 360p HDTV AAC H.264-NEXT", "Series Title (2018")]
+        [TestCase("Series.Title.1990.COMPLETE.MULTI.VFF.1080p.WEB.EAC3.2.0.HEVC-GRP", "Series Title 1990")]
+        [TestCase("Series.Title.COMPLETE.FRENCH.1080p.WEB.H264-GRP", "Series Title")]
+        [TestCase("Series Title Complete", "Series Title")]
+        [TestCase("Series Title [Complete] [1080p]", "Series Title")]
+        [TestCase("[GRP] Series Title Complete [1080p]", "Series Title")]
+        [TestCase("The.100.Complete.1080p.WEB.H264-GRP", "The 100")]
         public void should_parse_complete_series_release(string postTitle, string title)
         {
             var result = Parser.Parser.ParseTitle(postTitle);
@@ -146,6 +155,31 @@ namespace NzbDrone.Core.Test.ParserTests
             var result = Parser.Parser.ParseTitle(postTitle);
             result.SeasonNumber.Should().Be(season);
             result.FullSeason.Should().BeTrue();
+            result.IsCompleteSeries.Should().BeFalse();
+        }
+
+        [TestCase("Series Title (2018) Complete 360p HDTV AAC H.264-NEXT", "Series Title", 2018)]
+        [TestCase("Parker.Lewis.Cant.Lose.1990.COMPLETE.MULTI.VFF.1080p.WEB.EAC3.2.0.HEVC-FTMVHD", "Parker Lewis Cant Lose", 1990)]
+        public void should_parse_year_of_complete_series_release(string postTitle, string titleWithoutYear, int year)
+        {
+            var result = Parser.Parser.ParseTitle(postTitle);
+            result.IsCompleteSeries.Should().BeTrue();
+            result.SeriesTitleInfo.TitleWithoutYear.Should().Be(titleWithoutYear);
+            result.SeriesTitleInfo.Year.Should().Be(year);
+        }
+
+        [TestCase("The.Complete.Guide.1x05.720p.HDTV.x264-GRP")]
+        [TestCase("Series.Title.Ep01-12.Complete.English.AC3.DL.1080p.BluRay.x264")]
+        [TestCase("Series.Title.S01E05.Complete.1080p.WEB.H264-GRP")]
+        [TestCase("Series Title 01-12 Complete 1080p")]
+        [TestCase("[GRP] Series Title - 05 Complete [1080p]")]
+        [TestCase("Series.Title.2023.01.15.Complete.1080p.WEB.H264-GRP")]
+        [TestCase("Series.Title.Part.2.Complete.1080p.WEB.H264-GRP")]
+        [TestCase("The.Complete.Guide.101.720p.HDTV.x264-GRP")]
+        public void should_not_parse_complete_in_title_or_episode_release_as_complete_series(string postTitle)
+        {
+            var result = Parser.Parser.ParseTitle(postTitle);
+            result.Should().NotBeNull();
             result.IsCompleteSeries.Should().BeFalse();
         }
 
